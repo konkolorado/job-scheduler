@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A job scheduler that supports creating and executing jobs based on a schedule"
 authors = ["Uriel Mandujano <uriel.mandujano14@gmail.com>"]
 license = "MIT"
+readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = "^3.8.0"
