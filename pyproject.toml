@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "job-scheduler"
+version = "0.1.0"
+description = "A job scheduler that supports creating and executing jobs based on a schedule"
+authors = ["Uriel Mandujano <uriel.mandujano14@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8.0"
+fastapi = "^0.61.1"
+uvicorn = "^0.12.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
