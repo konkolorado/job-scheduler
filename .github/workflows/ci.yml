@@ -9,12 +9,16 @@ jobs:
   ci:
     name: Run full test pipeline
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:6.0-alpine
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-
+    
       - name: Set target python version
         uses: actions/setup-python@v2
         with:
