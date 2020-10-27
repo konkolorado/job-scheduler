@@ -32,6 +32,7 @@ class ScheduleRepository(ABC):
     def __contains__(self, s: Schedule) -> bool:
         ...
 
+    @property
     @abstractmethod
-    def __len__(self) -> int:
+    async def size(self) -> int:
         ...

@@ -1,23 +1,32 @@
 import uuid
 
+import pytest
+
 from job_scheduler.api.models import Schedule, ScheduleRequest
 
 
-def test_delete(client, repo, schedule_request: ScheduleRequest):
-    resp = client.post("/schedule/", json=schedule_request.dict())
-    s = Schedule(**resp.json())
-    size_before = len(repo)
+@pytest.mark.asyncio
+async def test_delete(async_client, repo, schedule_request: ScheduleRequest):
+    async with async_client:
+        resp = await async_client.post("/schedule/", json=schedule_request.dict())
+    s = Schedule.parse_obj(resp.json())
 
-    resp = client.delete(f"/schedule/{s.id}")
+    size_before = await repo.size
+    async with async_client:
+        resp = await async_client.delete(f"/schedule/{s.id}")
+    size_after = await repo.size
 
     assert resp.status_code == 200
     assert s not in repo
-    assert len(repo) == size_before - 1
+    assert size_after == size_before - 1
 
 
-def test_delete_nonexistant_schedule(client, repo, schedule_request: ScheduleRequest):
-    size_before = len(repo)
-    resp = client.delete(f"/schedule/{uuid.uuid4()}")
+@pytest.mark.asyncio
+async def test_delete_nonexistant_schedule(async_client, repo):
+    size_before = await repo.size
+    async with async_client:
+        resp = await async_client.delete(f"/schedule/{uuid.uuid4()}")
+    size_after = await repo.size
 
     assert resp.status_code == 404
-    assert len(repo) == size_before
+    assert size_after == size_before

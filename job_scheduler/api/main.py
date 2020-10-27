@@ -4,13 +4,13 @@ import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 
 from job_scheduler.api.models import Schedule, ScheduleRequest
-from job_scheduler.api.service import (
+from job_scheduler.db import RedisRepository, ScheduleRepository
+from job_scheduler.services import (
     delete_schedule,
     get_schedule,
     store_schedule,
     update_schedule,
 )
-from job_scheduler.db import RedisRepository, ScheduleRepository
 
 app = FastAPI()
 
@@ -26,7 +26,7 @@ async def shutdown_event():
 
 @app.post("/schedule/", response_model=Schedule, status_code=201)
 async def create(req: ScheduleRequest, repo: ScheduleRepository = Depends(get_repo)):
-    s = Schedule(**req.dict())
+    s = Schedule.parse_obj(req.dict())
     return await store_schedule(repo, s)
 
 
@@ -40,9 +40,7 @@ async def get(s_id: UUID, repo: ScheduleRepository = Depends(get_repo)):
 
 @app.put("/schedule/{s_id}", response_model=Schedule)
 async def update(
-    s_id: UUID,
-    req: ScheduleRequest,
-    repo: ScheduleRepository = Depends(get_repo),
+    s_id: UUID, req: ScheduleRequest, repo: ScheduleRepository = Depends(get_repo)
 ):
     s = await update_schedule(repo, s_id, req)
     if s is None:

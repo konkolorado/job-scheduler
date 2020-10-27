@@ -27,7 +27,8 @@ class FakeRepository(ScheduleRepository):
     def __contains__(self, item: Schedule):
         return str(item.id) in self.data
 
-    def __len__(self):
+    @property
+    async def size(self):
         return len(self.data)
 
     @classmethod

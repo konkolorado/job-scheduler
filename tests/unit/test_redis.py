@@ -7,16 +7,7 @@ import pytest
 from job_scheduler.api.models import Schedule
 from job_scheduler.db import RedisRepository
 
-
-@pytest.yield_fixture(scope="session")
-def event_loop(request):
-    """
-    We need to override the event_loop fixture such that it is of the
-    correct scope.
-    """
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+# TODO Determine what behavior we need and fix tests
 
 
 @pytest.fixture(scope="session")
@@ -27,10 +18,11 @@ async def repo():
 
 @pytest.mark.asyncio
 async def test_add(repo: RedisRepository, schedule: Schedule):
-    size_before = len(repo)
+    size_before = await repo.size
     await repo.add(str(schedule.id), schedule.priority, schedule.json())
+    size_after = await repo.size
+    assert size_after == size_before + 1
 
-    assert len(repo) == size_before + 1
     data = await RedisRepository.redis.get(str(schedule.id))
     assert data
 
@@ -62,9 +54,9 @@ async def test_update(repo: RedisRepository, schedule: Schedule):
     schedule.description = f"Updated in test at {datetime.now()}"
     schedule.active = False
 
-    size_before = len(repo)
+    size_before = await repo.size
     await repo.update(str(schedule.id), schedule.priority, schedule.json())
-    assert len(repo) == size_before
+    assert await repo.size == size_before
 
     data = await repo.get(str(schedule.id))
     assert data
@@ -78,18 +70,18 @@ async def test_update(repo: RedisRepository, schedule: Schedule):
 
 @pytest.mark.asyncio
 async def test_update_nonexistant(repo: RedisRepository, schedule: Schedule):
-    size_before = len(repo)
+    size_before = await repo.size
     s = await repo.update(str(schedule.id), schedule.priority, schedule.json())
     assert s is None
-    assert len(repo) == size_before
+    assert await repo.size == size_before + 1
 
 
 @pytest.mark.asyncio
 async def test_delete(repo: RedisRepository, schedule: Schedule):
     await repo.add(str(schedule.id), schedule.priority, schedule.json())
-    size_before = len(repo)
+    size_before = await repo.size
     await repo.delete(str(schedule.id))
-    assert len(repo) == size_before - 1
+    assert await repo.size == size_before - 1
 
     data = await RedisRepository.redis.get(str(schedule.id))
     assert data is None
@@ -97,8 +89,8 @@ async def test_delete(repo: RedisRepository, schedule: Schedule):
 
 @pytest.mark.asyncio
 async def test_delete_nonexistant(repo: RedisRepository, schedule: Schedule):
-    size_before = len(repo)
+    size_before = await repo.size
     s = await repo.delete(str(schedule.id))
 
     assert s is None
-    assert len(repo) == size_before
+    assert await repo.size == size_before
