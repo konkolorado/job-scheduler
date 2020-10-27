@@ -1,0 +1,26 @@
+POST http://localhost:8000/schedule/
+
+{
+        "name": "Test Name",
+        "description": "Test Description",
+        "schedule": "* * * * *"
+}
+
+###
+
+GET  http://localhost:8000/schedule/64da42c8-066b-4950-a201-e92130af4dda
+
+
+###
+PUT  http://localhost:8000/schedule/ac5dfe23-047f-42cd-a499-956b2d73c273
+
+{
+    "name": "updated",
+    "description": "updated schedule",
+    "schedule": "* * * * *",
+    "active": false
+}
+
+
+###
+DELETE http://localhost:8000/schedule/a6c7fe80-dcec-43fa-8398-3462450236a7

@@ -3,15 +3,15 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 import pytz
-from croniter import CroniterBadCronError, croniter
+from croniter import croniter
 from pydantic import BaseModel, Field, validator
 
 
 class ScheduleRequest(BaseModel):
     name: str
-    description: Optional[str] = None
     schedule: str
-    start_at: datetime = Field(default_factory=datetime.now)
+    description: Optional[str] = None
+    start_at: Optional[datetime] = None
     active: bool = True
 
     @validator("schedule")
@@ -23,13 +23,19 @@ class ScheduleRequest(BaseModel):
 
 class Schedule(BaseModel):
     name: str
-    description: Optional[str] = None
     schedule: str
-    start_at: datetime
+    description: Optional[str] = None
+    start_at: Optional[datetime]
     active: bool
     id: UUID = Field(default_factory=uuid4)
     next_run: Optional[datetime] = None
     last_run: Optional[datetime] = None
+
+    @validator("start_at", always=True)
+    def validate_start_at(cls, v) -> datetime:
+        if v is None:
+            return datetime.now()
+        return v
 
     @validator("next_run", always=True)
     def init_next_run(cls, _, values) -> datetime:
@@ -43,14 +49,15 @@ class Schedule(BaseModel):
     def calc_next_run(self, start: Optional[datetime] = None) -> datetime:
         if start is None:
             start = datetime.now()
-        uct_now = pytz.utc.localize(start)
-        return croniter(self.schedule, uct_now).get_next(datetime)
+        uct_start = pytz.utc.localize(start)
+        return croniter(self.schedule, uct_start).get_next(datetime)
 
     def confirm_execution(self):
         self.last_run = pytz.utc.localize(datetime.now())
         self.next_run = self.calc_next_run()
 
-    def get_priority(self) -> float:
-        if self.next_run:
-            return self.next_run.timestamp()
-        raise ValueError("next_run not set")
+    @property
+    def priority(self) -> float:
+        if self.next_run is None:
+            raise ValueError("next_run not set")
+        return self.next_run.timestamp()

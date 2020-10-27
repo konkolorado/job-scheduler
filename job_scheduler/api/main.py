@@ -1,51 +1,60 @@
 from uuid import UUID
 
 import uvicorn
-from fastapi import Depends, FastAPI, Response
+from fastapi import Depends, FastAPI, HTTPException
 
 from job_scheduler.api.models import Schedule, ScheduleRequest
-from job_scheduler.db.base import ScheduleRepository
-from job_scheduler.db.redis import RedisRepository
+from job_scheduler.api.service import (
+    delete_schedule,
+    get_schedule,
+    store_schedule,
+    update_schedule,
+)
+from job_scheduler.db import RedisRepository, ScheduleRepository
 
 app = FastAPI()
 
 
-# TODO test the rest of these methods
-# TODO investigate async redis
-def get_repo() -> ScheduleRepository:
-    return RedisRepository.get_repo()
+async def get_repo() -> ScheduleRepository:
+    return await RedisRepository.get_repo()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await RedisRepository.shutdown()
 
 
 @app.post("/schedule/", response_model=Schedule, status_code=201)
-async def create_schedule(
-    req: ScheduleRequest, repo: ScheduleRepository = Depends(get_repo)
-):
+async def create(req: ScheduleRequest, repo: ScheduleRepository = Depends(get_repo)):
     s = Schedule(**req.dict())
-    repo.add(s.id, s.dict())
-    return s
+    return await store_schedule(repo, s)
 
 
 @app.get("/schedule/{s_id}", response_model=Schedule)
-async def get_schedule(s_id: UUID, repo: ScheduleRepository = Depends(get_repo)):
-    s = repo.get(s_id)
-    return Schedule(**s)
+async def get(s_id: UUID, repo: ScheduleRepository = Depends(get_repo)):
+    s = await get_schedule(repo, s_id)
+    if s is None:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    return s
 
 
 @app.put("/schedule/{s_id}", response_model=Schedule)
-async def update_schedule(
+async def update(
     s_id: UUID,
     req: ScheduleRequest,
     repo: ScheduleRepository = Depends(get_repo),
 ):
-    s = Schedule(**req.dict(), id=s_id)
-    repo.update(s_id, s.dict())
-    return repo.get(s_id)
+    s = await update_schedule(repo, s_id, req)
+    if s is None:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    return s
 
 
 @app.delete("/schedule/{s_id}", response_model=Schedule)
-async def delete_schedule(s_id: UUID, repo: ScheduleRepository = Depends(get_repo)):
-    s = repo.get(s_id)
-    repo.delete(s_id)
+async def delete(s_id: UUID, repo: ScheduleRepository = Depends(get_repo)):
+    s = await delete_schedule(repo, s_id)
+    if s is None:
+        raise HTTPException(status_code=404, detail="Schedule not found")
     return s
 
 
