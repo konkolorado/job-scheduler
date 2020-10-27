@@ -1,9 +1,8 @@
 from datetime import datetime
-from uuid import UUID
 
 import pytz
 
-from job_scheduler.db.helpers import JsonMap
+from job_scheduler.api.models import Schedule
 
 
 def test_valid_schedule(client, repo):
@@ -12,29 +11,34 @@ def test_valid_schedule(client, repo):
         "description": "Test Description",
         "schedule": "* * * * *",
     }
+    size_before = len(repo)
     resp = client.post("/schedule/", json=data)
 
     assert resp.status_code == 201
-    # validate_data_in_repo(repo, data, resp.json())
+    assert Schedule(**resp.json()) in repo
+    assert len(repo) == size_before + 1
 
 
-def test_invalid_schedule(client):
+def test_invalid_schedule(client, repo):
     data = {
         "name": "Test Name",
         "description": "Test Description",
         "schedule": "BLAH * * * *",
     }
+    size_before = len(repo)
     resp = client.post("/schedule/", json=data)
     assert resp.status_code == 422
+    assert len(repo) == size_before
 
 
-def test_valid_start_at(client):
+def test_valid_start_at(client, repo):
     data = {
         "name": "Test Name",
         "description": "Test Description",
         "schedule": "* * * * *",
         "start_at": str(datetime.now(pytz.utc)),
     }
+    size_before = len(repo)
     resp = client.post("/schedule/", json=data)
     assert resp.status_code == 201
     assert datetime.fromisoformat(resp.json()["start_at"]) == datetime.fromisoformat(
@@ -43,6 +47,7 @@ def test_valid_start_at(client):
     assert datetime.fromisoformat(resp.json()["next_run"]) > datetime.fromisoformat(
         data["start_at"]
     )
+    assert len(repo) == size_before + 1
 
 
 def test_missing_data(client, repo):
@@ -50,17 +55,8 @@ def test_missing_data(client, repo):
         "name": "Test Name",
         "schedule": "Test Schedule",
     }
+    size_before = len(repo)
+
     resp = client.post("/schedule/", json=data)
     assert resp.status_code == 422
-
-    # data.pop("silly_field")
-    # validate_data_in_repo(repo, data, resp.json())
-
-
-def validate_data_in_repo(repo, req_data: JsonMap, resp_data: JsonMap):
-    assert resp_data["id"] in repo
-    assert resp_data == repo.get(resp_data["id"])
-
-    for k in req_data:
-        assert k in resp_data
-        assert req_data[k] == resp_data[k]
+    assert len(repo) == size_before

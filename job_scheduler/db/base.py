@@ -1,27 +1,37 @@
 from abc import ABC, abstractclassmethod, abstractmethod
 
+from job_scheduler.api.models import Schedule
+
 
 class ScheduleRepository(ABC):
     @abstractmethod
-    def add(self):
+    async def add(self, key: str, score: float, value: str) -> None:
         pass
 
     @abstractmethod
-    def get(self):
+    async def get(self, key: str) -> str:
         pass
 
     @abstractmethod
-    def update(self):
+    async def update(self, key: str, score: float, value: str) -> None:
         pass
 
     @abstractmethod
-    def delete(self):
-        pass
-
-    @abstractmethod
-    def list(self):
+    async def delete(self, key: str) -> None:
         pass
 
     @abstractclassmethod
     def get_repo(cls):
         pass
+
+    @abstractclassmethod
+    def shutdown(cls):
+        pass
+
+    @abstractmethod
+    def __contains__(self, s: Schedule) -> bool:
+        ...
+
+    @abstractmethod
+    def __len__(self) -> int:
+        ...

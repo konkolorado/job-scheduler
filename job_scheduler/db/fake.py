@@ -1,31 +1,39 @@
 import json
 from uuid import UUID
 
+from job_scheduler.api.models import Schedule
 from job_scheduler.db.base import ScheduleRepository
-from job_scheduler.db.helpers import CustomEncoder, JsonMap
+from job_scheduler.db.helpers import JsonMap
 
 
 class FakeRepository(ScheduleRepository):
+    scored_data: JsonMap = {}
     data: JsonMap = {}
 
-    def add(self, key: UUID, value: JsonMap):
-        self.data[str(key)] = json.dumps(value, cls=CustomEncoder)
+    async def add(self, key: str, score: float, value: str):
+        self.data[key] = value
+        self.scored_data[key] = score
 
-    def get(self, key: UUID) -> JsonMap:
-        return json.loads(self.data[str(key)])
+    async def get(self, key: str):
+        return self.data.get(key, None)
 
-    def update(self, key: UUID, value: JsonMap):
-        self.data[str(key)] = json.dumps(value, cls=CustomEncoder)
+    async def update(self, key: str, score: float, value: str):
+        self.data[key] = value
+        self.scored_data[key] = score
 
-    def delete(self, key: UUID):
-        self.data.pop(str(key))
+    async def delete(self, key: str):
+        self.data.pop(key)
 
-    def __contains__(self, item):
-        return str(item) in self.data
+    def __contains__(self, item: Schedule):
+        return str(item.id) in self.data
 
-    def list(self):
-        pass
+    def __len__(self):
+        return len(self.data)
 
     @classmethod
     def get_repo(cls):
         return cls()
+
+    @classmethod
+    def shutdown(cls):
+        pass
