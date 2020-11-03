@@ -6,7 +6,7 @@ from httpx import AsyncClient
 
 from job_scheduler.api.main import app, get_repo
 from job_scheduler.api.models import Schedule, ScheduleRequest
-from job_scheduler.db.fake import FakeRepository
+from job_scheduler.db import FakeRepository
 
 
 @pytest.fixture(scope="session")

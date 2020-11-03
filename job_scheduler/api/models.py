@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -20,6 +20,15 @@ class ScheduleRequest(BaseModel):
             return v
         raise ValueError("Use a valid cron format")
 
+    @validator("start_at")
+    def validate_start_at(cls, v):
+        if v is None:
+            return v
+
+        if v.tzinfo is None or v.tzinfo.utcoffset(v) is None:
+            raise ValueError("Datetime must be UTC-localized")
+        return v
+
 
 class Schedule(BaseModel):
     name: str
@@ -34,30 +43,33 @@ class Schedule(BaseModel):
     @validator("start_at", always=True)
     def validate_start_at(cls, v) -> datetime:
         if v is None:
-            return datetime.now()
+            return datetime.now(timezone.utc)
         return v
 
     @validator("next_run", always=True)
-    def init_next_run(cls, _, values) -> datetime:
+    def init_next_run(cls, next_run, values) -> datetime:
+        if next_run is not None:
+            return next_run
+
         schedule, start_at = values["schedule"], values["start_at"]
-        try:
-            start_at = pytz.utc.localize(start_at)
-        except ValueError:
-            pass
         return croniter(schedule, start_at).get_next(datetime)
 
     def calc_next_run(self, start: Optional[datetime] = None) -> datetime:
         if start is None:
-            start = datetime.now()
-        uct_start = pytz.utc.localize(start)
-        return croniter(self.schedule, uct_start).get_next(datetime)
+            start = datetime.now(timezone.utc)
+
+        try:
+            utc_start = pytz.utc.localize(start)
+        except ValueError:
+            utc_start = start
+
+        return croniter(self.schedule, utc_start).get_next(datetime)
 
     def confirm_execution(self):
-        self.last_run = pytz.utc.localize(datetime.now())
-        self.next_run = self.calc_next_run()
+        self.last_run = datetime.now(timezone.utc)
+        self.next_run = self.calc_next_run(self.next_run)
 
     @property
     def priority(self) -> float:
-        if self.next_run is None:
-            raise ValueError("next_run not set")
+        assert self.next_run
         return self.next_run.timestamp()

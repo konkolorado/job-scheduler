@@ -1,11 +1,11 @@
-from uuid import UUID
+import itertools
+from typing import Sequence
 
 import aioredis
 from aioredis import Redis
 
-from job_scheduler.api.models import Schedule
 from job_scheduler.db.base import ScheduleRepository
-from job_scheduler.db.helpers import JsonMap
+from job_scheduler.db.types import RepoItem
 
 
 class RedisRepository(ScheduleRepository):
@@ -14,30 +14,49 @@ class RedisRepository(ScheduleRepository):
     def __init__(self):
         self.table = "schedules"
 
-    async def add(self, key: str, score: float, value: str) -> None:
-        await self.redis.set(key, value)
-        await self.redis.zadd(self.table, score, key)
+    async def add(self, items: Sequence[RepoItem]) -> None:
+        keys_and_vals = {i[0]: i[1] for i in items}
+        scores_and_keys = [(i[2], i[0]) for i in items]
 
-    async def get(self, key: str) -> str:
-        return await self.redis.get(key)
+        await self.redis.mset(keys_and_vals)
+        await self.redis.zadd(
+            self.table,
+            *itertools.chain.from_iterable(scores_and_keys),
+        )
 
-    async def update(self, key: str, score: float, value: str) -> None:
-        await self.redis.set(key, value)
-        await self.redis.zadd(self.table, score, key)
+    async def get(self, keys: Sequence[str]) -> Sequence[str]:
+        if len(keys) == 0:
+            return []
 
-    async def delete(self, key: str) -> None:
-        delete = await self.redis.delete(key)
-        zrem = await self.redis.zrem(self.table, key)
+        result = await self.redis.mget(*keys)
+        if len(result) == 1 and result[0] == None:
+            return []
+        return result
 
-    async def get_range(self, min_value: float, max_value: float):
-        return await self.redis.zrangebyscore(self.table, min=min_value)
+    async def update(self, items: Sequence[RepoItem]):
+        keys_and_vals = ((i[0], i[1]) for i in items)
+        scores_and_keys = ((i[2], i[0]) for i in items)
+
+        await self.redis.mset(*itertools.chain.from_iterable(keys_and_vals))
+        await self.redis.zadd(
+            self.table,
+            *itertools.chain.from_iterable(scores_and_keys),
+            exist=self.redis.ZSET_IF_EXIST,
+        )
+
+    async def delete(self, keys: Sequence[str]) -> None:
+        delete = await self.redis.delete(*keys)
+        zrem = await self.redis.zrem(self.table, *keys)
+
+    async def get_range(self, min_value: float, max_value: float) -> Sequence[str]:
+        return await self.redis.zrangebyscore(self.table, min=min_value, max=max_value)
 
     def __contains__(self, item) -> bool:
         return False
 
     @property
     async def size(self) -> int:
-        return await self.redis.dbsize()
+        return await self.redis.zcount(self.table)
 
     @classmethod
     async def get_repo(cls, address: str = "redis://localhost"):

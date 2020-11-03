@@ -1,23 +1,29 @@
 from abc import ABC, abstractclassmethod, abstractmethod
+from typing import Sequence
 
 from job_scheduler.api.models import Schedule
+from job_scheduler.db.types import RepoItem
 
 
 class ScheduleRepository(ABC):
     @abstractmethod
-    async def add(self, key: str, score: float, value: str) -> None:
+    async def add(self, items: Sequence[RepoItem]) -> None:
         pass
 
     @abstractmethod
-    async def get(self, key: str) -> str:
+    async def get(self, keys: Sequence[str]) -> Sequence[str]:
         pass
 
     @abstractmethod
-    async def update(self, key: str, score: float, value: str) -> None:
+    async def update(self, items: Sequence[RepoItem]) -> Sequence[str]:
         pass
 
     @abstractmethod
-    async def delete(self, key: str) -> None:
+    async def delete(self, keys: Sequence[str]) -> None:
+        pass
+
+    @abstractmethod
+    async def get_range(self, min: float, max: float) -> Sequence[str]:
         pass
 
     @abstractclassmethod

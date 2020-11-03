@@ -1,8 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
-import pytz
-from httpx import AsyncClient
 
 from job_scheduler.api.models import Schedule
 
@@ -46,7 +44,7 @@ async def test_valid_start_at(async_client, repo):
         "name": "Test Name",
         "description": "Test Description",
         "schedule": "* * * * *",
-        "start_at": str(datetime.now(pytz.utc)),
+        "start_at": str(datetime.now(timezone.utc)),
     }
     size_before = await repo.size
     async with async_client:

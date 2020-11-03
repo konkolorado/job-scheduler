@@ -27,33 +27,34 @@ async def shutdown_event():
 @app.post("/schedule/", response_model=Schedule, status_code=201)
 async def create(req: ScheduleRequest, repo: ScheduleRepository = Depends(get_repo)):
     s = Schedule.parse_obj(req.dict())
-    return await store_schedule(repo, s)
+    result, *_ = await store_schedule(repo, s)
+    return result
 
 
 @app.get("/schedule/{s_id}", response_model=Schedule)
 async def get(s_id: UUID, repo: ScheduleRepository = Depends(get_repo)):
     s = await get_schedule(repo, s_id)
-    if s is None:
+    if len(s) == 0:
         raise HTTPException(status_code=404, detail="Schedule not found")
-    return s
+    return s[0]
 
 
 @app.put("/schedule/{s_id}", response_model=Schedule)
 async def update(
     s_id: UUID, req: ScheduleRequest, repo: ScheduleRepository = Depends(get_repo)
 ):
-    s = await update_schedule(repo, s_id, req)
-    if s is None:
+    s = await update_schedule(repo, {s_id: req.dict(exclude_unset=True)})
+    if len(s) == 0:
         raise HTTPException(status_code=404, detail="Schedule not found")
-    return s
+    return s[0]
 
 
 @app.delete("/schedule/{s_id}", response_model=Schedule)
 async def delete(s_id: UUID, repo: ScheduleRepository = Depends(get_repo)):
     s = await delete_schedule(repo, s_id)
-    if s is None:
+    if len(s) == 0:
         raise HTTPException(status_code=404, detail="Schedule not found")
-    return s
+    return s[0]
 
 
 if __name__ == "__main__":
