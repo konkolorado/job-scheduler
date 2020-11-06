@@ -24,6 +24,11 @@ def test_schedule_req_invalid_schedule():
             name="Test Schedule Name",
             description="Test Schedule Description",
             schedule="invalid_schedule",
+            job={
+                "callback_url": "http://example.com",
+                "http_method": "post",
+                "expected_status_code": 200,
+            },
         )
 
 
@@ -32,6 +37,11 @@ def test_schedule_req_defaults():
         name="Test Schedule Name",
         description="Test Schedule Description",
         schedule="* * * * *",
+        job={
+            "callback_url": "http://example.com",
+            "http_method": "post",
+            "expected_status_code": 200,
+        },
     )
 
     assert schedule_req.active is True
@@ -46,6 +56,11 @@ def test_schedule_req_invalid_start():
             schedule="* * * * *",
             active=False,
             start_at="WHENEVER YOU FEEL LIKE IT",
+            job={
+                "callback_url": "http://example.com",
+                "http_method": "post",
+                "expected_status_code": 200,
+            },
         )
 
 
@@ -66,6 +81,11 @@ def test_schedule_defaults():
         description="Test Schedule Description",
         schedule="* * * * *",
         active=True,
+        job={
+            "callback_url": "http://example.com",
+            "http_method": "post",
+            "expected_status_code": 200,
+        },
     )
 
     assert s.start_at is not None
@@ -81,6 +101,11 @@ def test_schedule_with_start_at():
         schedule="* * * * *",
         active=True,
         start_at=start_at,
+        job={
+            "callback_url": "http://example.com",
+            "http_method": "post",
+            "expected_status_code": 200,
+        },
     )
 
     assert croniter(s.schedule, start_at).get_next(datetime) == s.next_run
@@ -92,6 +117,11 @@ def test_schedule_calc_next_run():
         description="Test Schedule Description",
         schedule="* * * * *",
         active=True,
+        job={
+            "callback_url": "http://example.com",
+            "http_method": "post",
+            "expected_status_code": 200,
+        },
     )
 
     now = datetime.now(timezone.utc)
@@ -104,6 +134,11 @@ def test_schedule_confirm_execution():
         description="Test Schedule Description",
         schedule="* * * * *",
         active=True,
+        job={
+            "callback_url": "http://example.com",
+            "http_method": "post",
+            "expected_status_code": 200,
+        },
     )
 
     first_run = croniter(s.schedule, s.start_at).get_next(datetime)

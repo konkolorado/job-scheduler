@@ -32,6 +32,11 @@ def schedule_request():
         name="Test Schedule Name",
         description="Test Schedule Description",
         schedule="* * * * *",
+        job={
+            "callback_url": "http://example.com",
+            "http_method": "post",
+            "expected_status_code": 200,
+        },
     )
 
 
