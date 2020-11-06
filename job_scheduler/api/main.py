@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 import uvicorn
@@ -5,6 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from job_scheduler.api.models import Schedule, ScheduleRequest
 from job_scheduler.db import RedisRepository, ScheduleRepository
+from job_scheduler.logging import setup_logging
 from job_scheduler.services import (
     delete_schedule,
     get_schedule,
@@ -12,6 +14,7 @@ from job_scheduler.services import (
     update_schedule,
 )
 
+logger = logging.getLogger("api")
 app = FastAPI()
 
 
@@ -19,9 +22,16 @@ async def get_repo() -> ScheduleRepository:
     return await RedisRepository.get_repo()
 
 
+@app.on_event("startup")
+async def startup_event():
+    logging.getLogger("uvicorn").propagate = False
+    setup_logging()
+
+
 @app.on_event("shutdown")
 async def shutdown_event():
     await RedisRepository.shutdown()
+    logger.info("Repository shut down.")
 
 
 @app.post("/schedule/", response_model=Schedule, status_code=201)

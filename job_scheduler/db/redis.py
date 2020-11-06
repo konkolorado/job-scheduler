@@ -1,4 +1,5 @@
 import itertools
+import logging
 from typing import Sequence
 
 import aioredis
@@ -52,6 +53,7 @@ class RedisRepository(ScheduleRepository):
         return await self.redis.zrangebyscore(self.table, min=min_value, max=max_value)
 
     def __contains__(self, item) -> bool:
+        # Test this
         return False
 
     @property
@@ -61,6 +63,7 @@ class RedisRepository(ScheduleRepository):
     @classmethod
     async def get_repo(cls, address: str = "redis://localhost"):
         if not hasattr(cls, "redis"):
+            logging.info(f"Instantiating repository using redis client at {address}.")
             rp = await aioredis.create_redis_pool(address, encoding="utf-8")
             cls.redis = rp
         return cls()
@@ -69,3 +72,4 @@ class RedisRepository(ScheduleRepository):
     async def shutdown(cls):
         cls.redis.close()
         await cls.redis.wait_closed()
+        logging.info(f"Closed redis client.")

@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -51,6 +51,12 @@ async def test_get(repo: RedisRepository, schedule: Schedule):
     await RedisRepository.redis.set(str(schedule.id), schedule.json())
     data, *_ = await repo.get([str(schedule.id)])
     assert schedule == Schedule.parse_raw(data)
+
+
+@pytest.mark.asyncio
+async def test_get_nothing(repo: RedisRepository, schedule: Schedule):
+    data = await repo.get([])
+    assert data == []
 
 
 @pytest.mark.asyncio
@@ -116,3 +122,48 @@ async def test_delete_nonexistant(repo: RedisRepository, schedule: Schedule):
 
     assert s is None
     assert await repo.size == size_before
+
+
+@pytest.mark.asyncio
+async def test_get_range(repo: RedisRepository, schedule: Schedule):
+    second_schedule = schedule.copy()
+    second_schedule.id = uuid.uuid4()
+    second_schedule.schedule = "*/2 * * * *"
+    second_schedule.description = "Every 2 mins"
+    second_schedule.next_run = second_schedule.calc_next_run()
+
+    third_schedule = schedule.copy()
+    third_schedule.schedule = "*/3 * * * *"
+    third_schedule.description = "Every 3 mins"
+    third_schedule.id = uuid.uuid4()
+    third_schedule.next_run = third_schedule.calc_next_run()
+
+    await repo.add(
+        [
+            (str(schedule.id), schedule.json(), schedule.priority),
+            (str(second_schedule.id), second_schedule.json(), second_schedule.priority),
+            (str(third_schedule.id), third_schedule.json(), third_schedule.priority),
+        ]
+    )
+
+    now = datetime.now(timezone.utc)
+    future = now + timedelta(minutes=1)
+    results = await repo.get_range(now.timestamp(), future.timestamp())
+
+    will_execute, wont_execute = [], []
+    for s in [schedule, second_schedule, third_schedule]:
+        if now.timestamp() <= s.priority <= future.timestamp():
+            will_execute.append(s)
+        else:
+            wont_execute.append(s)
+
+    for s in will_execute:
+        assert str(s.id) in results
+    for s in wont_execute:
+        assert str(s.id) not in results
+
+
+@pytest.mark.asyncio
+async def test_redis_shutdown(repo: RedisRepository):
+    await repo.shutdown()
+    assert repo.redis.closed

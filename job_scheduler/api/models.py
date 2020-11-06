@@ -1,10 +1,22 @@
 from datetime import datetime, timezone
+from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
 
 import pytz
 from croniter import croniter
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, HttpUrl, validator
+
+
+class HttpMethodEnum(str, Enum):
+    post = "post"
+    get = "get"
+
+
+class Job(BaseModel):
+    callback_url: HttpUrl
+    http_method: HttpMethodEnum = HttpMethodEnum.post
+    expected_status_code: int = 200
 
 
 class ScheduleRequest(BaseModel):
@@ -13,6 +25,7 @@ class ScheduleRequest(BaseModel):
     description: Optional[str] = None
     start_at: Optional[datetime] = None
     active: bool = True
+    job: Job
 
     @validator("schedule")
     def validate_schedule(cls, v):
@@ -36,6 +49,7 @@ class Schedule(BaseModel):
     description: Optional[str] = None
     start_at: Optional[datetime]
     active: bool
+    job: Job
     id: UUID = Field(default_factory=uuid4)
     next_run: Optional[datetime] = None
     last_run: Optional[datetime] = None
@@ -66,8 +80,16 @@ class Schedule(BaseModel):
         return croniter(self.schedule, utc_start).get_next(datetime)
 
     def confirm_execution(self):
-        self.last_run = datetime.now(timezone.utc)
-        self.next_run = self.calc_next_run(self.next_run)
+        utc_now = datetime.now(timezone.utc)
+        self.last_run = utc_now
+
+        if self.next_run < utc_now:
+            # Calc next run relative to current time
+            self.next_run = self.calc_next_run()
+        else:
+            # Calc next run relative to when the job is going to
+            # run next
+            self.next_run = self.calc_next_run(self.next_run)
 
     @property
     def priority(self) -> float:
