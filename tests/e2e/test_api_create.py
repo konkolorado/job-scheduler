@@ -1,45 +1,69 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-import pytz
+import pytest
 
 from job_scheduler.api.models import Schedule
 
 
-def test_valid_schedule(client, repo):
+@pytest.mark.asyncio
+async def test_valid_schedule(async_client, repo):
     data = {
         "name": "Test Name",
         "description": "Test Description",
         "schedule": "* * * * *",
+        "job": {
+            "callback_url": "http://example.com",
+            "http_method": "post",
+        },
     }
-    size_before = len(repo)
-    resp = client.post("/schedule/", json=data)
+    size_before = await repo.size
+    async with async_client:
+        resp = await async_client.post("/schedule/", json=data)
+    size_after = await repo.size
+    new_s = Schedule.parse_obj(resp.json())
 
     assert resp.status_code == 201
-    assert Schedule(**resp.json()) in repo
-    assert len(repo) == size_before + 1
+    assert str(new_s.id) in repo
+    assert size_after == size_before + 1
 
 
-def test_invalid_schedule(client, repo):
+@pytest.mark.asyncio
+async def test_invalid_schedule(async_client, repo):
     data = {
         "name": "Test Name",
         "description": "Test Description",
         "schedule": "BLAH * * * *",
+        "job": {
+            "callback_url": "http://example.com",
+            "http_method": "post",
+        },
     }
-    size_before = len(repo)
-    resp = client.post("/schedule/", json=data)
+    size_before = await repo.size
+    async with async_client:
+        resp = await async_client.post("/schedule/", json=data)
+    size_after = await repo.size
+
     assert resp.status_code == 422
-    assert len(repo) == size_before
+    assert size_after == size_before
 
 
-def test_valid_start_at(client, repo):
+@pytest.mark.asyncio
+async def test_valid_start_at(async_client, repo):
     data = {
         "name": "Test Name",
         "description": "Test Description",
         "schedule": "* * * * *",
-        "start_at": str(datetime.now(pytz.utc)),
+        "start_at": str(datetime.now(timezone.utc)),
+        "job": {
+            "callback_url": "http://example.com",
+            "http_method": "post",
+        },
     }
-    size_before = len(repo)
-    resp = client.post("/schedule/", json=data)
+    size_before = await repo.size
+    async with async_client:
+        resp = await async_client.post("/schedule/", json=data)
+    size_after = await repo.size
+
     assert resp.status_code == 201
     assert datetime.fromisoformat(resp.json()["start_at"]) == datetime.fromisoformat(
         data["start_at"]
@@ -47,16 +71,19 @@ def test_valid_start_at(client, repo):
     assert datetime.fromisoformat(resp.json()["next_run"]) > datetime.fromisoformat(
         data["start_at"]
     )
-    assert len(repo) == size_before + 1
+    assert size_after == size_before + 1
 
 
-def test_missing_data(client, repo):
+@pytest.mark.asyncio
+async def test_missing_data(async_client, repo):
     data = {
         "name": "Test Name",
         "schedule": "Test Schedule",
     }
-    size_before = len(repo)
+    size_before = await repo.size
+    async with async_client:
+        resp = await async_client.post("/schedule/", json=data)
+    size_after = await repo.size
 
-    resp = client.post("/schedule/", json=data)
     assert resp.status_code == 422
-    assert len(repo) == size_before
+    assert size_after == size_before

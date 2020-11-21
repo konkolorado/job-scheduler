@@ -1,34 +1,57 @@
 import uuid
 from datetime import datetime
 
+import pytest
+
 from job_scheduler.api.models import Schedule, ScheduleRequest
 
 
-def test_update_schedule(client, repo, schedule_request: ScheduleRequest):
-    resp = client.post("/schedule/", json=schedule_request.dict())
-    id = resp.json()["id"]
+@pytest.mark.asyncio
+async def test_update_schedule(async_client, repo, schedule_request: ScheduleRequest):
+    async with async_client:
+        resp = await async_client.post("/schedule/", json=schedule_request.dict())
+    s_id = resp.json()["id"]
 
+    size_before = await repo.size
     schedule_request.description = f"Updated in tests at {datetime.now()}"
-    size_before = len(repo)
-    resp = client.put(f"/schedule/{id}", json=schedule_request.dict())
+
+    async with async_client:
+        resp = await async_client.put(f"/schedule/{s_id}", json=schedule_request.dict())
+    size_after = await repo.size
+    updated_s = Schedule.parse_obj(resp.json())
 
     assert resp.status_code == 200
-    assert len(repo) == size_before
-    assert Schedule(**resp.json()) in repo
+    assert size_after == size_before
+    assert str(updated_s.id) in repo
 
 
-def test_bad_update(client, repo, schedule_request: ScheduleRequest):
-    resp = client.post("/schedule/", json=schedule_request.dict())
-    id = resp.json()["id"]
+@pytest.mark.asyncio
+async def test_bad_update(async_client, repo, schedule_request: ScheduleRequest):
+    async with async_client:
+        resp = await async_client.post("/schedule/", json=schedule_request.dict())
+    s_id = resp.json()["id"]
 
+    size_before = await repo.size
     schedule_request.schedule = "Not_A_SCHEDULE"
-    size_before = len(repo)
-    resp = client.put(f"/schedule/{id}", json=schedule_request.dict())
+
+    async with async_client:
+        resp = await async_client.put(f"/schedule/{s_id}", json=schedule_request.dict())
+    size_after = await repo.size
 
     assert resp.status_code == 422
-    assert len(repo) == size_before
+    assert size_after == size_before
 
 
-def test_update_nonexistant(client, repo, schedule_request: ScheduleRequest):
-    resp = client.put(f"/schedule/{uuid.uuid4()}", json=schedule_request.dict())
+@pytest.mark.asyncio
+async def test_update_nonexistant(
+    async_client, repo, schedule_request: ScheduleRequest
+):
+    size_before = await repo.size
+    async with async_client:
+        resp = await async_client.put(
+            f"/schedule/{uuid.uuid4()}", json=schedule_request.dict()
+        )
+    size_after = await repo.size
+
     assert resp.status_code == 404
+    assert size_after == size_before

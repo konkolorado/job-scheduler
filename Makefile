@@ -1,10 +1,12 @@
-.PHONY: help
+.PHONY: help test api scheduler local
 
 define HELPTEXT
-Please use "make <target>" where <target> is one of
+Run "make <target>" where <target> is one of
  help:      to print this message
  test:      to run the full suite of tests
- api:		to start the API service
+ api:	    to start the API service
+ scheduler: to start the Job Scheduler service
+ local:     to  start a local stack of services
 endef
 export HELPTEXT
 
@@ -16,3 +18,9 @@ test:
 
 api:
 	poetry run python job_scheduler/api/main.py
+
+scheduler:
+	poetry run python job_scheduler/scheduler/main.py
+
+local:
+	docker-compose up -d

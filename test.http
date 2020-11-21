@@ -3,7 +3,12 @@ POST http://localhost:8000/schedule/
 {
         "name": "Test Name",
         "description": "Test Description",
-        "schedule": "* * * * *"
+        "schedule": "* * * * *",
+        "job": {
+            "callback_url": "http://example.com",
+            "http_method": "post",
+            "expected_status_code": 200
+        }
 }
 
 ###
