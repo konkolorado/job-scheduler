@@ -52,7 +52,7 @@ class RedisRepository(ScheduleRepository):
     async def get_range(self, min_value: float, max_value: float) -> Sequence[str]:
         return await self.redis.zrangebyscore(self.table, min=min_value, max=max_value)
 
-    def __contains__(self, item) -> bool:
+    def __contains__(self, _: str) -> bool:
         # Test this
         return False
 

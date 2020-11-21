@@ -18,7 +18,7 @@ async def test_store_schedule(repo: ScheduleRepository, schedule: Schedule):
     s = await store_schedule(repo, schedule)
 
     assert len(s) == 1
-    assert s[0] in repo
+    assert str(s[0].id) in repo
 
 
 @pytest.mark.asyncio
@@ -29,7 +29,7 @@ async def test_store_list_schedules(repo: ScheduleRepository, schedule: Schedule
     stored = await store_schedule(repo, [schedule, second_schedule])
     assert stored is not None
     for s in stored:
-        assert s in repo
+        assert str(s.id) in repo
 
 
 @pytest.mark.asyncio
@@ -54,7 +54,7 @@ async def test_delete_schedule(repo: ScheduleRepository, schedule: Schedule):
     size_after = await repo.size
 
     assert s is not None
-    assert schedule not in repo
+    assert str(schedule.id) not in repo
     assert size_after == size_before - 1
 
 
@@ -67,7 +67,7 @@ async def test_delete_nonexistant_schedule(
     size_after = await repo.size
 
     assert len(s) == 0
-    assert schedule not in repo
+    assert str(schedule.id) not in repo
     assert size_after == size_before
 
 

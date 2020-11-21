@@ -1,4 +1,4 @@
-.PHONY: help
+.PHONY: help test api scheduler local
 
 define HELPTEXT
 Run "make <target>" where <target> is one of
@@ -6,6 +6,7 @@ Run "make <target>" where <target> is one of
  test:      to run the full suite of tests
  api:	    to start the API service
  scheduler: to start the Job Scheduler service
+ local:     to  start a local stack of services
 endef
 export HELPTEXT
 
@@ -20,3 +21,6 @@ api:
 
 scheduler:
 	poetry run python job_scheduler/scheduler/main.py
+
+local:
+	docker-compose up -d

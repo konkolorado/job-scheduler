@@ -17,7 +17,7 @@ async def test_delete(async_client, repo, schedule_request: ScheduleRequest):
     size_after = await repo.size
 
     assert resp.status_code == 200
-    assert s not in repo
+    assert str(s.id) not in repo
     assert size_after == size_before - 1
 
 

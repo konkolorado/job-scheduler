@@ -14,16 +14,16 @@ async def test_valid_schedule(async_client, repo):
         "job": {
             "callback_url": "http://example.com",
             "http_method": "post",
-            "expected_status_code": 200,
         },
     }
     size_before = await repo.size
     async with async_client:
         resp = await async_client.post("/schedule/", json=data)
     size_after = await repo.size
+    new_s = Schedule.parse_obj(resp.json())
 
     assert resp.status_code == 201
-    assert Schedule.parse_obj(resp.json()) in repo
+    assert str(new_s.id) in repo
     assert size_after == size_before + 1
 
 
@@ -36,7 +36,6 @@ async def test_invalid_schedule(async_client, repo):
         "job": {
             "callback_url": "http://example.com",
             "http_method": "post",
-            "expected_status_code": 200,
         },
     }
     size_before = await repo.size
@@ -58,7 +57,6 @@ async def test_valid_start_at(async_client, repo):
         "job": {
             "callback_url": "http://example.com",
             "http_method": "post",
-            "expected_status_code": 200,
         },
     }
     size_before = await repo.size

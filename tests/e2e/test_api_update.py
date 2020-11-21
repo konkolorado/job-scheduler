@@ -18,10 +18,11 @@ async def test_update_schedule(async_client, repo, schedule_request: ScheduleReq
     async with async_client:
         resp = await async_client.put(f"/schedule/{s_id}", json=schedule_request.dict())
     size_after = await repo.size
+    updated_s = Schedule.parse_obj(resp.json())
 
     assert resp.status_code == 200
     assert size_after == size_before
-    assert Schedule.parse_obj(resp.json()) in repo
+    assert str(updated_s.id) in repo
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,6 @@
 from abc import ABC, abstractclassmethod, abstractmethod
 from typing import Sequence
 
-from job_scheduler.api.models import Schedule
 from job_scheduler.db.types import RepoItem
 
 
@@ -35,7 +34,7 @@ class ScheduleRepository(ABC):
         pass
 
     @abstractmethod
-    def __contains__(self, s: Schedule) -> bool:
+    def __contains__(self, s: str) -> bool:
         ...
 
     @property

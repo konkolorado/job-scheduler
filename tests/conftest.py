@@ -35,7 +35,6 @@ def schedule_request():
         job={
             "callback_url": "http://example.com",
             "http_method": "post",
-            "expected_status_code": 200,
         },
     )
 

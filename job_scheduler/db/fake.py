@@ -2,7 +2,6 @@ import json
 from typing import Sequence, Tuple, Union
 from uuid import UUID
 
-from job_scheduler.api.models import Schedule
 from job_scheduler.db.base import ScheduleRepository
 from job_scheduler.db.types import JsonMap, RepoItem
 
@@ -40,8 +39,8 @@ class FakeRepository(ScheduleRepository):
                 results.append(data[0])
         return results
 
-    def __contains__(self, item: Schedule):
-        return str(item.id) in self.data
+    def __contains__(self, key: str):
+        return key in self.data
 
     @property
     async def size(self):

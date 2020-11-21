@@ -7,16 +7,26 @@ import pytz
 from croniter import croniter
 from pydantic import BaseModel, Field, HttpUrl, validator
 
+from job_scheduler.db.types import JsonMap
 
-class HttpMethodEnum(str, Enum):
+
+class HttpMethod(str, Enum):
     post = "post"
     get = "get"
 
 
-class Job(BaseModel):
+class JobRequest(BaseModel):
     callback_url: HttpUrl
-    http_method: HttpMethodEnum = HttpMethodEnum.post
-    expected_status_code: int = 200
+    http_method: HttpMethod = HttpMethod.post
+
+
+class Job(BaseModel):
+    schedule_id: UUID
+    job_id: UUID = Field(default_factory=uuid4)
+    callback_url: HttpUrl
+    http_method: HttpMethod
+    status_code: int
+    result: JsonMap
 
 
 class ScheduleRequest(BaseModel):
@@ -25,7 +35,7 @@ class ScheduleRequest(BaseModel):
     description: Optional[str] = None
     start_at: Optional[datetime] = None
     active: bool = True
-    job: Job
+    job: JobRequest
 
     @validator("schedule")
     def validate_schedule(cls, v):
@@ -49,7 +59,7 @@ class Schedule(BaseModel):
     description: Optional[str] = None
     start_at: Optional[datetime]
     active: bool
-    job: Job
+    job: JobRequest
     id: UUID = Field(default_factory=uuid4)
     next_run: Optional[datetime] = None
     last_run: Optional[datetime] = None

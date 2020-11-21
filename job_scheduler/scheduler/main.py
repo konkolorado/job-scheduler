@@ -25,6 +25,7 @@ async def schedule_jobs(repo: ScheduleRepository, interval=1):
 
         schedules_to_run = await get_range(repo, past.timestamp(), future.timestamp())
         for s in schedules_to_run:
+            # RUN THE JOBS
             print(s.job.callback_url)
             s.confirm_execution()
             await update_schedule(repo, {s.id: s.dict()})
