@@ -3,30 +3,30 @@ from typing import Sequence, Tuple, Union
 from uuid import UUID
 
 from job_scheduler.db.base import ScheduleRepository
-from job_scheduler.db.types import JsonMap, RepoItem
+from job_scheduler.db.types import JsonMap, ScheduleRepoItem
 
 
 class FakeRepository(ScheduleRepository):
     scored_data: JsonMap = {}
     data: JsonMap = {}
 
-    async def add(self, items: Sequence[RepoItem]) -> None:
-        for key, value, score in items:
-            self.data[key] = value
-            self.scored_data[key] = score
+    async def add(self, *items: ScheduleRepoItem) -> None:
+        for i in items:
+            self.data[i.id] = i.schedule
+            self.scored_data[i.id] = i.priority
 
-    async def get(self, keys: Sequence[str]) -> Sequence[str]:
+    async def get(self, *keys: str) -> Sequence[str]:
         return [self.data.get(k, "") for k in keys if self.data.get(k)]
 
-    async def update(self, items: Sequence[RepoItem]) -> Sequence[str]:
+    async def update(self, *items: ScheduleRepoItem) -> Sequence[str]:
         ret_val = []
-        for key, value, score in items:
-            self.data[key] = value
-            self.scored_data[key] = score
-            ret_val.append(value)
+        for i in items:
+            self.data[i.id] = i.schedule
+            self.scored_data[i.id] = i.priority
+            ret_val.append(i.schedule)
         return ret_val
 
-    async def delete(self, keys: Sequence[str]) -> None:
+    async def delete(self, *keys: str) -> None:
         for k in keys:
             self.data.pop(k, None)
 

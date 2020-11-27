@@ -25,8 +25,9 @@ def test_schedule_req_invalid_schedule():
             description="Test Schedule Description",
             schedule="invalid_schedule",
             job={
-                "callback_url": "http://example.com",
+                "callback_url": "http://127.0.0.1:8080",
                 "http_method": "post",
+                "payload": {},
             },
         )
 
@@ -37,8 +38,9 @@ def test_schedule_req_defaults():
         description="Test Schedule Description",
         schedule="* * * * *",
         job={
-            "callback_url": "http://example.com",
+            "callback_url": "http://127.0.0.1:8080",
             "http_method": "post",
+            "payload": {},
         },
     )
 
@@ -55,8 +57,9 @@ def test_schedule_req_invalid_start():
             active=False,
             start_at="WHENEVER YOU FEEL LIKE IT",
             job={
-                "callback_url": "http://example.com",
+                "callback_url": "http://127.0.0.1:8080",
                 "http_method": "post",
+                "payload": {},
             },
         )
 
@@ -79,8 +82,9 @@ def test_schedule_defaults():
         schedule="* * * * *",
         active=True,
         job={
-            "callback_url": "http://example.com",
+            "callback_url": "http://127.0.0.1:8080",
             "http_method": "post",
+            "payload": {},
         },
     )
 
@@ -98,8 +102,9 @@ def test_schedule_with_start_at():
         active=True,
         start_at=start_at,
         job={
-            "callback_url": "http://example.com",
+            "callback_url": "http://127.0.0.1:8080",
             "http_method": "post",
+            "payload": {},
         },
     )
 
@@ -113,8 +118,9 @@ def test_schedule_calc_next_run():
         schedule="* * * * *",
         active=True,
         job={
-            "callback_url": "http://example.com",
+            "callback_url": "http://127.0.0.1:8080",
             "http_method": "post",
+            "payload": {},
         },
     )
 
@@ -129,8 +135,9 @@ def test_schedule_confirm_execution():
         schedule="* * * * *",
         active=True,
         job={
-            "callback_url": "http://example.com",
+            "callback_url": "http://127.0.0.1:8080",
             "http_method": "post",
+            "payload": {},
         },
     )
 

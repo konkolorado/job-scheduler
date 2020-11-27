@@ -1,28 +1,32 @@
 from abc import ABC, abstractclassmethod, abstractmethod
-from typing import Sequence
 
-from job_scheduler.db.types import RepoItem
+from job_scheduler.db.types import JobRepoItem, ScheduleRepoItem
 
 
 class ScheduleRepository(ABC):
     @abstractmethod
-    async def add(self, items: Sequence[RepoItem]) -> None:
+    def add(self, *items: ScheduleRepoItem):
         pass
 
     @abstractmethod
-    async def get(self, keys: Sequence[str]) -> Sequence[str]:
+    def get(self, *keys: str):
         pass
 
     @abstractmethod
-    async def update(self, items: Sequence[RepoItem]) -> Sequence[str]:
+    def update(self, *items: ScheduleRepoItem):
         pass
 
     @abstractmethod
-    async def delete(self, keys: Sequence[str]) -> None:
+    def delete(self, *keys: str):
         pass
 
     @abstractmethod
-    async def get_range(self, min: float, max: float) -> Sequence[str]:
+    def get_range(self, min: float, max: float):
+        pass
+
+    @property
+    @abstractmethod
+    async def size(self):
         pass
 
     @abstractclassmethod
@@ -33,11 +37,29 @@ class ScheduleRepository(ABC):
     def shutdown(cls):
         pass
 
+
+class JobRepository(ABC):
     @abstractmethod
-    def __contains__(self, s: str) -> bool:
-        ...
+    def add(self, *items: JobRepoItem):
+        pass
+
+    @abstractmethod
+    def get(self, *keys: str):
+        pass
+
+    @abstractmethod
+    def get_by_parent(self, *keys: str):
+        pass
 
     @property
     @abstractmethod
     async def size(self) -> int:
-        ...
+        pass
+
+    @abstractclassmethod
+    def get_repo(cls):
+        pass
+
+    @abstractclassmethod
+    def shutdown(cls):
+        pass
