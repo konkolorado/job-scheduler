@@ -19,12 +19,6 @@ class RedisBroker(ScheduleBroker):
     def __init__(self):
         RedisBroker.brokers += 1
 
-    def namespaced_key(self, key: str) -> str:
-        return f"{self.namespace}:{key}"
-
-    def strip_namespace(self, key: str) -> str:
-        return key.removeprefix(self.namespace)
-
     async def publish(self, *messages: str) -> Sequence[str]:
         """
         Publishes a list of messages to a broker. Returns a list containing the
