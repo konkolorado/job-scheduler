@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
@@ -12,17 +12,18 @@ from job_scheduler.db.types import JsonMap
 
 class HttpMethod(str, Enum):
     post = "post"
-    get = "get"
 
 
-class JobRequest(BaseModel):
+class JobDefinition(BaseModel):
     callback_url: HttpUrl
     http_method: HttpMethod = HttpMethod.post
+    payload: JsonMap
 
 
 class Job(BaseModel):
     schedule_id: UUID
-    job_id: UUID = Field(default_factory=uuid4)
+    id: UUID = Field(default_factory=uuid4)
+    ran_at: datetime
     callback_url: HttpUrl
     http_method: HttpMethod
     status_code: int
@@ -35,7 +36,7 @@ class ScheduleRequest(BaseModel):
     description: Optional[str] = None
     start_at: Optional[datetime] = None
     active: bool = True
-    job: JobRequest
+    job: JobDefinition
 
     @validator("schedule")
     def validate_schedule(cls, v):
@@ -59,7 +60,7 @@ class Schedule(BaseModel):
     description: Optional[str] = None
     start_at: Optional[datetime]
     active: bool
-    job: JobRequest
+    job: JobDefinition
     id: UUID = Field(default_factory=uuid4)
     next_run: Optional[datetime] = None
     last_run: Optional[datetime] = None
@@ -92,10 +93,10 @@ class Schedule(BaseModel):
     def confirm_execution(self):
         utc_now = datetime.now(timezone.utc)
         self.last_run = utc_now
-
         if self.next_run < utc_now:
-            # Calc next run relative to current time
-            self.next_run = self.calc_next_run()
+            # The job was supposed to run before now, to catch up we
+            # calc the next run relative to right now
+            self.next_run = self.calc_next_run(utc_now)
         else:
             # Calc next run relative to when the job is going to
             # run next
@@ -105,3 +106,16 @@ class Schedule(BaseModel):
     def priority(self) -> float:
         assert self.next_run
         return self.next_run.timestamp()
+
+    @property
+    def current_delay(self) -> timedelta:
+        assert self.next_run
+        return datetime.now(timezone.utc) - self.next_run
+
+    def is_late(self, allowance=0) -> bool:
+        assert allowance >= 0
+        assert self.next_run
+
+        grace_period = timedelta(seconds=allowance)
+        utc_now = datetime.now(timezone.utc)
+        return self.next_run < (utc_now - grace_period)

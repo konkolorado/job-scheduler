@@ -4,49 +4,58 @@ from datetime import datetime, timedelta, timezone
 from typing import List
 
 from job_scheduler.api.models import Schedule
-from job_scheduler.db import RedisRepository, ScheduleRepository
+from job_scheduler.broker import RedisBroker, ScheduleBroker
+from job_scheduler.db import RedisScheduleRepository, ScheduleRepository
 from job_scheduler.logging import setup_logging
-from job_scheduler.services import get_range, update_schedule
+from job_scheduler.services import enqueue_jobs, get_range
 
 logger = logging.getLogger("job_scheduler")
 
 
-async def schedule_jobs(repo: ScheduleRepository, interval=1):
-    missed_schedules = await get_missed_schedules(repo)
-    for m in missed_schedules:
-        m.confirm_execution()
-        await update_schedule(repo, {m.id: m.dict()})
-    logger.warning(f"Corrected for {len(missed_schedules)} missed job(s).")
-
+async def schedule_jobs(repo: ScheduleRepository, broker: ScheduleBroker, interval=1):
     while True:
-        now = datetime.now(timezone.utc)
-        past = now - timedelta(seconds=interval / 2)
-        future = now + timedelta(seconds=interval)
+        now = get_now()
+        schedules_to_run = await get_runnable_schedules(repo, now)
+        enqueued = await enqueue_jobs(broker, schedules_to_run)
 
-        schedules_to_run = await get_range(repo, past.timestamp(), future.timestamp())
+        n_late = len(schedules_to_run) - len(enqueued)
+        total_delay = 0.0
         for s in schedules_to_run:
-            # RUN THE JOBS
-            print(s.job.callback_url)
-            s.confirm_execution()
-            await update_schedule(repo, {s.id: s.dict()})
+            if s not in enqueued:
+                total_delay += s.current_delay.seconds
 
-        logger.info(
-            f"Ran {len(schedules_to_run)} jobs between {past.replace(tzinfo=None)} "
-            f"and {future.replace(tzinfo=None)}. Sleeping for {interval} second(s)."
-        )
+        logger.info(f"Queued {len(enqueued)} schedule(s) for execution at {now}.")
+        if n_late > 0:
+            logger.warning(
+                f"Observed {total_delay} seconds delay in {n_late} delayed schedule(s)."
+            )
+        logger.info(f"Sleeping for {interval} second(s).")
         await asyncio.sleep(interval)
 
 
-async def get_missed_schedules(repo: ScheduleRepository) -> List[Schedule]:
+async def get_runnable_schedules(
+    repo: ScheduleRepository, now: datetime
+) -> List[Schedule]:
+    return await get_range(repo, None, now.timestamp())
+
+
+def get_now() -> datetime:
     now = datetime.now(timezone.utc)
-    last_yr = now - timedelta(weeks=52)
-    return await get_range(repo, last_yr.timestamp(), now.timestamp())
+    return now - timedelta(microseconds=now.microsecond)
 
 
 async def main():
     setup_logging()
-    repo = await RedisRepository.get_repo()
-    await schedule_jobs(repo)
+    repo = await RedisScheduleRepository.get_repo()
+    broker = await RedisBroker.get_broker()
+
+    try:
+        await schedule_jobs(repo, broker)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        await repo.shutdown()
+        await broker.shutdown()
 
 
 if __name__ == "__main__":

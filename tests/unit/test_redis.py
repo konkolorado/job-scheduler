@@ -5,69 +5,92 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from job_scheduler.api.models import Schedule
-from job_scheduler.db import RedisRepository
-
-# TODO Determine what behavior we need and fix tests
+from job_scheduler.db import RedisScheduleRepository
+from job_scheduler.db.types import ScheduleRepoItem
 
 
 @pytest.fixture(scope="session")
 @pytest.mark.asyncio
 async def repo():
-    return await RedisRepository.get_repo()
+    return await RedisScheduleRepository.get_repo()
 
 
 @pytest.mark.asyncio
-async def test_add(repo: RedisRepository, schedule: Schedule):
+async def test_add(repo: RedisScheduleRepository, schedule: Schedule):
     size_before = await repo.size
-    await repo.add([(str(schedule.id), schedule.json(), schedule.priority)])
+    await repo.add(
+        ScheduleRepoItem(
+            id=str(schedule.id),
+            schedule=schedule.json(),
+            priority=schedule.priority,
+        )
+    )
     size_after = await repo.size
     assert size_after == size_before + 1
 
-    data = await RedisRepository.redis.get(str(schedule.id))
+    data = await RedisScheduleRepository.redis.get("schedules:" + str(schedule.id))
     assert schedule == Schedule.parse_raw(data)
 
 
 @pytest.mark.asyncio
-async def test_add_multiple(repo: RedisRepository, schedule: Schedule):
+async def test_add_multiple(repo: RedisScheduleRepository, schedule: Schedule):
     size_before = await repo.size
 
+    new_schedule = schedule.copy()
+    new_schedule.id = uuid.uuid4()
     to_add = [
-        (str(schedule.id), schedule.json(), schedule.priority),
-        (str(uuid.uuid4()), schedule.json(), schedule.priority),
+        ScheduleRepoItem(
+            id=str(schedule.id),
+            schedule=schedule.json(),
+            priority=schedule.priority,
+        ),
+        ScheduleRepoItem(
+            id=str(new_schedule.id),
+            schedule=new_schedule.json(),
+            priority=new_schedule.priority,
+        ),
     ]
 
-    await repo.add(to_add)
+    await repo.add(*to_add)
     size_after = await repo.size
 
     assert size_after == size_before + len(to_add)
 
     for added in to_add:
-        s, *_ = await repo.get([added[0]])
-        assert s == added[1]
+        s, *_ = await repo.get(added.id)
+        assert s == added.schedule
 
 
 @pytest.mark.asyncio
-async def test_get(repo: RedisRepository, schedule: Schedule):
-    await RedisRepository.redis.set(str(schedule.id), schedule.json())
-    data, *_ = await repo.get([str(schedule.id)])
+async def test_get(repo: RedisScheduleRepository, schedule: Schedule):
+    await RedisScheduleRepository.redis.set(
+        "schedules:" + str(schedule.id), schedule.json()
+    )
+    data, *_ = await repo.get(str(schedule.id))
     assert schedule == Schedule.parse_raw(data)
 
 
 @pytest.mark.asyncio
-async def test_get_nothing(repo: RedisRepository, schedule: Schedule):
-    data = await repo.get([])
+async def test_get_nothing(repo: RedisScheduleRepository, schedule: Schedule):
+    data = await repo.get()
     assert data == []
 
 
 @pytest.mark.asyncio
-async def test_get_nonexistant(repo: RedisRepository, schedule: Schedule):
-    data = await repo.get([str(schedule.id)])
+async def test_get_nonexistant(repo: RedisScheduleRepository, schedule: Schedule):
+    data = await repo.get(str(schedule.id))
     assert len(data) == 0
 
 
 @pytest.mark.asyncio
-async def test_update(repo: RedisRepository, schedule: Schedule):
-    await repo.add([(str(schedule.id), schedule.json(), schedule.priority)])
+async def test_update(repo: RedisScheduleRepository, schedule: Schedule):
+    await repo.add(
+        ScheduleRepoItem(
+            id=str(schedule.id),
+            schedule=schedule.json(),
+            priority=schedule.priority,
+        )
+    )
 
     modified_schedule = schedule.copy()
     modified_schedule.schedule = "5 5 5 5 5"
@@ -76,17 +99,15 @@ async def test_update(repo: RedisRepository, schedule: Schedule):
 
     size_before = await repo.size
     await repo.update(
-        [
-            (
-                str(modified_schedule.id),
-                modified_schedule.json(),
-                modified_schedule.priority,
-            )
-        ]
+        ScheduleRepoItem(
+            id=str(modified_schedule.id),
+            schedule=modified_schedule.json(),
+            priority=modified_schedule.priority,
+        )
     )
     assert await repo.size == size_before
 
-    data, *_ = await repo.get([str(schedule.id)])
+    data, *_ = await repo.get(str(schedule.id))
     updated_schedule = Schedule.parse_raw(data)
     assert schedule != updated_schedule
     assert updated_schedule.schedule == modified_schedule.schedule
@@ -95,28 +116,40 @@ async def test_update(repo: RedisRepository, schedule: Schedule):
 
 
 @pytest.mark.asyncio
-async def test_update_nonexistant(repo: RedisRepository, schedule: Schedule):
+async def test_update_nonexistant(repo: RedisScheduleRepository, schedule: Schedule):
     size_before = await repo.size
-    s = await repo.update([(str(schedule.id), schedule.json(), schedule.priority)])
+    s = await repo.update(
+        ScheduleRepoItem(
+            id=str(schedule.id),
+            schedule=schedule.json(),
+            priority=schedule.priority,
+        )
+    )
     size_after = await repo.size
     assert size_after == size_before
 
 
 @pytest.mark.asyncio
-async def test_delete(repo: RedisRepository, schedule: Schedule):
-    await repo.add([(str(schedule.id), schedule.json(), schedule.priority)])
+async def test_delete(repo: RedisScheduleRepository, schedule: Schedule):
+    await repo.add(
+        ScheduleRepoItem(
+            id=str(schedule.id),
+            schedule=schedule.json(),
+            priority=schedule.priority,
+        )
+    )
 
     size_before = await repo.size
-    await repo.delete([str(schedule.id)])
+    await repo.delete(str(schedule.id))
     size_after = await repo.size
     assert size_after == size_before - 1
 
-    data = await RedisRepository.redis.get(str(schedule.id))
+    data = await RedisScheduleRepository.redis.get(str(schedule.id))
     assert data is None
 
 
 @pytest.mark.asyncio
-async def test_delete_nonexistant(repo: RedisRepository, schedule: Schedule):
+async def test_delete_nonexistant(repo: RedisScheduleRepository, schedule: Schedule):
     size_before = await repo.size
     s = await repo.delete(str(schedule.id))
 
@@ -125,7 +158,7 @@ async def test_delete_nonexistant(repo: RedisRepository, schedule: Schedule):
 
 
 @pytest.mark.asyncio
-async def test_get_range(repo: RedisRepository, schedule: Schedule):
+async def test_get_range(repo: RedisScheduleRepository, schedule: Schedule):
     second_schedule = schedule.copy()
     second_schedule.id = uuid.uuid4()
     second_schedule.schedule = "*/2 * * * *"
@@ -139,11 +172,21 @@ async def test_get_range(repo: RedisRepository, schedule: Schedule):
     third_schedule.next_run = third_schedule.calc_next_run()
 
     await repo.add(
-        [
-            (str(schedule.id), schedule.json(), schedule.priority),
-            (str(second_schedule.id), second_schedule.json(), second_schedule.priority),
-            (str(third_schedule.id), third_schedule.json(), third_schedule.priority),
-        ]
+        ScheduleRepoItem(
+            id=str(schedule.id),
+            schedule=schedule.json(),
+            priority=schedule.priority,
+        ),
+        ScheduleRepoItem(
+            id=str(second_schedule.id),
+            schedule=second_schedule.json(),
+            priority=second_schedule.priority,
+        ),
+        ScheduleRepoItem(
+            id=str(third_schedule.id),
+            schedule=third_schedule.json(),
+            priority=third_schedule.priority,
+        ),
     )
 
     now = datetime.now(timezone.utc)
@@ -164,6 +207,6 @@ async def test_get_range(repo: RedisRepository, schedule: Schedule):
 
 
 @pytest.mark.asyncio
-async def test_redis_shutdown(repo: RedisRepository):
+async def test_redis_shutdown(repo: RedisScheduleRepository):
     await repo.shutdown()
     assert repo.redis.closed

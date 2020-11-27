@@ -18,6 +18,7 @@ logging_config = {
     "loggers": {
         "job_scheduler": {"handlers": ["default"], "level": "INFO", "propagate": False},
         "api": {"handlers": ["default"], "level": "INFO", "propagate": False},
+        "job_runner": {"handlers": ["default"], "level": "INFO", "propagate": False},
     },
     "root": {"handlers": ["default"], "level": "INFO"},
 }

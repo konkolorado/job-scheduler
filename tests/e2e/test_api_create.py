@@ -12,8 +12,9 @@ async def test_valid_schedule(async_client, repo):
         "description": "Test Description",
         "schedule": "* * * * *",
         "job": {
-            "callback_url": "http://example.com",
+            "callback_url": "http://127.0.0.1:8080",
             "http_method": "post",
+            "payload": {},
         },
     }
     size_before = await repo.size
@@ -34,7 +35,7 @@ async def test_invalid_schedule(async_client, repo):
         "description": "Test Description",
         "schedule": "BLAH * * * *",
         "job": {
-            "callback_url": "http://example.com",
+            "callback_url": "http://127.0.0.1:8080",
             "http_method": "post",
         },
     }
@@ -55,8 +56,9 @@ async def test_valid_start_at(async_client, repo):
         "schedule": "* * * * *",
         "start_at": str(datetime.now(timezone.utc)),
         "job": {
-            "callback_url": "http://example.com",
+            "callback_url": "http://127.0.0.1:8080",
             "http_method": "post",
+            "payload": {},
         },
     }
     size_before = await repo.size
