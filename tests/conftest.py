@@ -41,6 +41,18 @@ def schedule_request():
 
 
 @pytest.fixture
+def n_schedules(schedule_request: ScheduleRequest):
+    def _make_n_schedules(n: int):
+        schedules = []
+        for _ in range(n):
+            s = Schedule(**schedule_request.dict())
+            schedules.append(s)
+        return schedules
+
+    return _make_n_schedules
+
+
+@pytest.fixture
 def schedule(schedule_request: ScheduleRequest):
     return Schedule(**schedule_request.dict())
 

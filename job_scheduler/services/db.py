@@ -1,4 +1,4 @@
-from typing import List, Mapping, Optional, Union
+from typing import Mapping, Optional, Sequence, Union
 from uuid import UUID
 
 from job_scheduler.api.models import Job, Schedule
@@ -7,43 +7,31 @@ from job_scheduler.db.types import JobRepoItem, JsonMap, ScheduleRepoItem
 
 
 async def store_schedule(
-    repo: ScheduleRepository, schedule: Union[List[Schedule], Schedule]
-) -> List[Schedule]:
-    if isinstance(schedule, Schedule):
-        data = [
-            ScheduleRepoItem(
-                id=str(schedule.id),
-                schedule=schedule.json(),
-                priority=schedule.priority,
-            )
-        ]
-        schedule = [schedule]
-    else:
-        data = [
-            ScheduleRepoItem(id=str(s.id), schedule=s.json(), priority=s.priority)
-            for s in schedule
-        ]
+    repo: ScheduleRepository, *schedules: Schedule
+) -> Sequence[Schedule]:
+
+    data = [
+        ScheduleRepoItem(id=str(s.id), schedule=s.json(), priority=s.priority)
+        for s in schedules
+    ]
     await repo.add(*data)
-    return schedule
+    return schedules
 
 
 async def get_schedule(
-    repo: ScheduleRepository, schedule_id: Union[UUID, List[UUID]]
-) -> List[Schedule]:
-    if isinstance(schedule_id, UUID):
-        schedule_id = [schedule_id]
-
-    schedule_ids = [str(s) for s in schedule_id]
-    data = await repo.get(*schedule_ids)
+    repo: ScheduleRepository, *schedule_ids: UUID
+) -> Sequence[Schedule]:
+    ids = [str(s_id) for s_id in schedule_ids]
+    data = await repo.get(*ids)
     return [Schedule.parse_raw(d) for d in data]
 
 
 async def update_schedule(
     repo: ScheduleRepository,
     updates: Mapping[UUID, JsonMap],
-) -> List[Schedule]:
+) -> Sequence[Schedule]:
     update_ids = [k for k in updates.keys()]
-    schedules = await get_schedule(repo, update_ids)
+    schedules = await get_schedule(repo, *update_ids)
 
     new_schedules = []
     for s in schedules:
@@ -60,15 +48,12 @@ async def update_schedule(
 
 
 async def delete_schedule(
-    repo: ScheduleRepository, schedule_id: Union[UUID, List[UUID]]
-) -> List[Schedule]:
-    if isinstance(schedule_id, UUID):
-        schedule_id = [schedule_id]
+    repo: ScheduleRepository, *schedule_ids: UUID
+) -> Sequence[Schedule]:
+    ids = [str(s) for s in schedule_ids]
+    data = await repo.get(*ids)
 
-    schedule_ids = [str(s) for s in schedule_id]
-    data = await repo.get(*schedule_ids)
-
-    await repo.delete(*schedule_ids)
+    await repo.delete(*ids)
     return [Schedule.parse_raw(d) for d in data]
 
 
@@ -76,7 +61,7 @@ async def get_range(
     repo: ScheduleRepository,
     min_value: Optional[float] = None,
     max_value: Optional[float] = None,
-) -> List[Schedule]:
+) -> Sequence[Schedule]:
     if min_value is None:
         min_value = float("-inf")
     if max_value is None:
@@ -87,7 +72,7 @@ async def get_range(
     return [Schedule.parse_raw(d) for d in data]
 
 
-async def add_jobs(repo: JobRepository, jobs: Union[List[Job], Job]):
+async def add_jobs(repo: JobRepository, jobs: Union[Sequence[Job], Job]):
     if isinstance(jobs, Job):
         jobs = [jobs]
 

@@ -14,7 +14,6 @@ class RedisBroker(ScheduleBroker):
     job_queue = "job_queue"
     jobs_in_broker = "enqueued"
     running_jobs = "running_jobs"
-    namespace = "broker"
 
     def __init__(self):
         RedisBroker.brokers += 1
