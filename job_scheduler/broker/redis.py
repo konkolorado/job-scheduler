@@ -56,6 +56,10 @@ class RedisBroker(ScheduleBroker):
         tr.srem(self.running_jobs, *messages)
         await tr.execute()
 
+    @property
+    async def size(self):
+        return await self.redis.scard(self.jobs_in_broker)
+
     @classmethod
     async def requeue_unacked(cls):
         messages = await cls.redis.smembers(cls.running_jobs)

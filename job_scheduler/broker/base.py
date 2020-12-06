@@ -11,11 +11,16 @@ class ScheduleBroker(ABC):
         pass
 
     @abstractmethod
-    def drain(self, limit: int):
+    def drain(self, limit: int = 100):
         pass
 
     @abstractmethod
     def ack(self, *messages: str):
+        pass
+
+    @property
+    @abstractmethod
+    def size(self):
         pass
 
     @abstractclassmethod

@@ -72,15 +72,13 @@ async def get_range(
     return [Schedule.parse_raw(d) for d in data]
 
 
-async def add_jobs(repo: JobRepository, jobs: Union[Sequence[Job], Job]):
-    if isinstance(jobs, Job):
-        jobs = [jobs]
-
+async def add_jobs(repo: JobRepository, *jobs: Job):
     items = []
     for j in jobs:
         item = JobRepoItem(id=str(j.id), schedule_id=str(j.schedule_id), job=j.json())
         items.append(item)
     await repo.add(*items)
+    return jobs
 
 
 async def get_jobs(repo: JobRepository, *job_ids: UUID):
@@ -100,5 +98,4 @@ async def get_schedule_jobs(repo: JobRepository, *schedule_ids: UUID):
             j = Job.parse_raw(j)
             parsed_jobs.append(j)
         result[UUID(s_id)] = parsed_jobs
-
     return result

@@ -25,27 +25,25 @@ from job_scheduler.services import (
 logger = logging.getLogger("job_runner")
 
 
-async def execute_jobs(
+async def run_jobs(
     s_repo: ScheduleRepository,
     j_repo: JobRepository,
     broker: ScheduleBroker,
     session: ClientSession,
 ):
-    while True:
-        schedule_ids = await dequeue_jobs(broker)
-        schedules = await get_schedule(s_repo, schedule_ids)
+    schedule_ids = await dequeue_jobs(broker)
+    schedules = await get_schedule(s_repo, *schedule_ids)
 
-        start = time.perf_counter()
-        results = await asyncio.gather(*[execute(session, s) for s in schedules])
-        elapsed = time.perf_counter() - start
+    start = time.perf_counter()
+    results = await asyncio.gather(*[execute(session, s) for s in schedules])
+    elapsed = time.perf_counter() - start
 
-        await add_jobs(j_repo, results)
-        for s in schedules:
-            s.confirm_execution()
-        await update_schedule(s_repo, {s.id: s.dict() for s in schedules})
-        await ack_jobs(broker, schedules)
-
-        logger.info(f"Ran {len(schedule_ids)} schedules in {elapsed:0.4f} second(s).")
+    await add_jobs(j_repo, *results)
+    for s in schedules:
+        s.confirm_execution()
+    await update_schedule(s_repo, {s.id: s.dict() for s in schedules})
+    await ack_jobs(broker, *schedules)
+    logger.info(f"Ran {len(schedule_ids)} schedules in {elapsed:0.4f} second(s).")
 
 
 async def execute(session: ClientSession, s: Schedule) -> Job:
@@ -77,15 +75,14 @@ async def main():
     broker = await RedisBroker.get_broker()
     session = ClientSession(timeout=ClientTimeout(total=1))
 
-    try:
-        await execute_jobs(schedule_repo, job_repo, broker, session)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        await schedule_repo.shutdown()
-        await job_repo.shutdown()
-        await broker.shutdown()
-        await session.close()
+    while True:
+        try:
+            await run_jobs(schedule_repo, job_repo, broker, session)
+        except KeyboardInterrupt:
+            await schedule_repo.shutdown()
+            await job_repo.shutdown()
+            await broker.shutdown()
+            await session.close()
 
 
 if __name__ == "__main__":

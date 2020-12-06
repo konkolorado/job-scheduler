@@ -14,34 +14,38 @@ class FakeBroker(ScheduleBroker):
             self.job_queue.put(m)
             self.jobs_in_broker.add(m)
 
-    def publish(self, *messages: str) -> Sequence[str]:
+    async def publish(self, *messages: str) -> Sequence[str]:
         deduplicated = []
         for m in messages:
             if m not in self.jobs_in_broker:
                 self.job_queue.put(m)
                 self.jobs_in_broker.add(m)
                 deduplicated.append(m)
-        return m
+        return deduplicated
 
-    def get(self, block=True) -> str:
+    async def get(self, block=True) -> str:
         m = self.job_queue.get(block)
         self.running_jobs.add(m)
         return m
 
-    def drain(self, limit=100) -> Sequence[str]:
-        messages = [self.get()]
+    async def drain(self, limit=100) -> Sequence[str]:
+        messages = [await self.get()]
         while True:
             try:
-                m = self.get(block=False)
+                m = await self.get(block=False)
                 messages.append(m)
             except Empty:
                 return messages
 
-    def ack(self, *messages: str):
+    async def ack(self, *messages: str):
         for m in messages:
             self.running_jobs.remove(m)
             self.jobs_in_broker.remove(m)
             self.job_queue.task_done()
+
+    @property
+    async def size(self):
+        return len(self.jobs_in_broker)
 
     @classmethod
     def requeue_unacked(cls):

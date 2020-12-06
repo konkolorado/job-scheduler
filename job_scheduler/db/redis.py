@@ -88,7 +88,7 @@ class RedisJobRepository(JobRepository):
     def __init__(self):
         self.namespace = "jobs"
 
-    def namespaced_key(self, key) -> str:
+    def namespaced_key(self, key: str) -> str:
         if key.startswith(f"{self.namespace}:"):
             return key
         return f"{self.namespace}:{key}"
@@ -96,6 +96,7 @@ class RedisJobRepository(JobRepository):
     async def add(self, *items: JobRepoItem):
         keys_and_vals = {self.namespaced_key(i.id): i.job for i in items}
         await self.redis.mset(keys_and_vals)
+
         for i in items:
             await self.redis.sadd(self.namespaced_key(i.schedule_id), i.id)
 
@@ -112,15 +113,16 @@ class RedisJobRepository(JobRepository):
     async def get_by_parent(self, *keys: str) -> MutableMapping[str, Sequence[str]]:
         result = {}
         for k in keys:
-            k = self.namespaced_key(k)
-            job_ids = await self.redis.smembers(k)
-            jobs = await self.get(job_ids)
+            namespaced_k = self.namespaced_key(k)
+            job_ids = await self.redis.smembers(namespaced_k)
+            jobs = await self.get(*job_ids)
             result[k] = jobs
         return result
 
     @property
     async def size(self) -> int:
-        return await self.redis.dbsize()
+        return 0
+        # return await self.redis.dbsize()
 
     @classmethod
     async def get_repo(cls, address: str = "redis://localhost") -> "RedisJobRepository":
