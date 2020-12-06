@@ -1,12 +1,13 @@
 import json
-from typing import Sequence, Tuple, Union
+from collections import defaultdict
+from typing import MutableMapping, MutableSet, Sequence, Tuple, Union
 from uuid import UUID
 
-from job_scheduler.db.base import ScheduleRepository
-from job_scheduler.db.types import JsonMap, ScheduleRepoItem
+from job_scheduler.db.base import JobRepository, ScheduleRepository
+from job_scheduler.db.types import JobRepoItem, JsonMap, ScheduleRepoItem
 
 
-class FakeRepository(ScheduleRepository):
+class FakeScheduleRepository(ScheduleRepository):
     scored_data: JsonMap = {}
     data: JsonMap = {}
 
@@ -45,6 +46,42 @@ class FakeRepository(ScheduleRepository):
     @property
     async def size(self):
         return len(self.data)
+
+    @classmethod
+    def get_repo(cls):
+        return cls()
+
+    @classmethod
+    def shutdown(cls):
+        pass
+
+
+class FakeJobRepository(JobRepository):
+    def __init__(self):
+        self.by_parent: MutableMapping[str, set] = defaultdict(set)
+        self.jobs: MutableMapping[str, str] = dict()
+
+    async def add(self, *items: JobRepoItem):
+        for i in items:
+            self.by_parent[i.schedule_id].add(i.job)
+            self.jobs[i.id] = i.job
+
+    async def get(self, *keys: str):
+        results = []
+        for k in keys:
+            job = self.jobs[k]
+            results.append(job)
+        return results
+
+    async def get_by_parent(self, *keys: str):
+        results = {}
+        for k in keys:
+            results[k] = list(self.by_parent[k])
+        return results
+
+    @property
+    def size(self):
+        pass
 
     @classmethod
     def get_repo(cls):

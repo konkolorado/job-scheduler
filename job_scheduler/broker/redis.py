@@ -14,7 +14,6 @@ class RedisBroker(ScheduleBroker):
     job_queue = "job_queue"
     jobs_in_broker = "enqueued"
     running_jobs = "running_jobs"
-    namespace = "broker"
 
     def __init__(self):
         RedisBroker.brokers += 1
@@ -56,6 +55,10 @@ class RedisBroker(ScheduleBroker):
         tr.srem(self.jobs_in_broker, *messages)
         tr.srem(self.running_jobs, *messages)
         await tr.execute()
+
+    @property
+    async def size(self):
+        return await self.redis.scard(self.jobs_in_broker)
 
     @classmethod
     async def requeue_unacked(cls):

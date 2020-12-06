@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import Sequence
 
 from job_scheduler.api.models import Schedule
 from job_scheduler.broker import RedisBroker, ScheduleBroker
@@ -13,29 +13,26 @@ logger = logging.getLogger("job_scheduler")
 
 
 async def schedule_jobs(repo: ScheduleRepository, broker: ScheduleBroker, interval=1):
-    while True:
-        now = get_now()
-        schedules_to_run = await get_runnable_schedules(repo, now)
-        enqueued = await enqueue_jobs(broker, schedules_to_run)
+    now = get_now()
+    schedules_to_run = await get_runnable_schedules(repo, now)
+    enqueued = await enqueue_jobs(broker, *schedules_to_run)
 
-        n_late = len(schedules_to_run) - len(enqueued)
-        total_delay = 0.0
-        for s in schedules_to_run:
-            if s not in enqueued:
-                total_delay += s.current_delay.seconds
+    n_late = len(schedules_to_run) - len(enqueued)
+    total_delay = 0.0
+    for s in schedules_to_run:
+        if s not in enqueued:
+            total_delay += s.current_delay.seconds
 
-        logger.info(f"Queued {len(enqueued)} schedule(s) for execution at {now}.")
-        if n_late > 0:
-            logger.warning(
-                f"Observed {total_delay} seconds delay in {n_late} delayed schedule(s)."
-            )
-        logger.info(f"Sleeping for {interval} second(s).")
-        await asyncio.sleep(interval)
+    logger.info(f"Queued {len(enqueued)} schedule(s) for execution at {now}.")
+    if n_late > 0:
+        logger.warning(f"Observed {total_delay} seconds delay in {n_late} schedule(s).")
+    logger.info(f"Sleeping for {interval} second(s).")
+    await asyncio.sleep(interval)
 
 
 async def get_runnable_schedules(
     repo: ScheduleRepository, now: datetime
-) -> List[Schedule]:
+) -> Sequence[Schedule]:
     return await get_range(repo, None, now.timestamp())
 
 
@@ -49,13 +46,12 @@ async def main():
     repo = await RedisScheduleRepository.get_repo()
     broker = await RedisBroker.get_broker()
 
-    try:
-        await schedule_jobs(repo, broker)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        await repo.shutdown()
-        await broker.shutdown()
+    while True:
+        try:
+            await schedule_jobs(repo, broker)
+        except KeyboardInterrupt:
+            await repo.shutdown()
+            await broker.shutdown()
 
 
 if __name__ == "__main__":
