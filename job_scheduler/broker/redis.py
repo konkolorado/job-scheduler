@@ -69,7 +69,7 @@ class RedisBroker(ScheduleBroker):
         logging.info(f"Moved {len(messages)} items from processing into job queue")
 
     @classmethod
-    async def get_broker(cls, *, address: str = "redis://localhost"):
+    async def get_broker(cls, address: str = "redis://localhost"):
         if not hasattr(cls, "redis"):
             logging.info(f"Instantiating broker using redis at {address}.")
             rp = await aioredis.create_redis_pool(address, encoding="utf-8")

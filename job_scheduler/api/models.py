@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 
 import pytz
 from croniter import croniter
-from pydantic import BaseModel, Field, HttpUrl, validator
+from pydantic import BaseModel, Field, validator
 
 from job_scheduler.db.types import JsonMap
 
@@ -15,7 +15,7 @@ class HttpMethod(str, Enum):
 
 
 class JobDefinition(BaseModel):
-    callback_url: HttpUrl
+    callback_url: str
     http_method: HttpMethod = HttpMethod.post
     payload: JsonMap
 
@@ -24,7 +24,7 @@ class Job(BaseModel):
     schedule_id: UUID
     id: UUID = Field(default_factory=uuid4)
     ran_at: datetime
-    callback_url: HttpUrl
+    callback_url: str
     http_method: HttpMethod
     status_code: int
     result: JsonMap

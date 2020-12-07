@@ -7,6 +7,7 @@ from aiohttp import ClientConnectorError, ClientSession, ClientTimeout
 
 from job_scheduler.api.models import HttpMethod, Job, Schedule
 from job_scheduler.broker import RedisBroker, ScheduleBroker
+from job_scheduler.config import config
 from job_scheduler.db import (
     JobRepository,
     RedisJobRepository,
@@ -36,6 +37,8 @@ async def run_jobs(
 
     start = time.perf_counter()
     results = await asyncio.gather(*[execute(session, s) for s in schedules])
+    for r in results:
+        logger.info(r)
     elapsed = time.perf_counter() - start
 
     await add_jobs(j_repo, *results)
@@ -70,9 +73,9 @@ async def execute(session: ClientSession, s: Schedule) -> Job:
 
 async def main():
     setup_logging()
-    schedule_repo = await RedisScheduleRepository.get_repo()
-    job_repo = await RedisJobRepository.get_repo()
-    broker = await RedisBroker.get_broker()
+    schedule_repo = await RedisScheduleRepository.get_repo(config.database_url)
+    job_repo = await RedisJobRepository.get_repo(config.database_url)
+    broker = await RedisBroker.get_broker(config.broker_url)
     session = ClientSession(timeout=ClientTimeout(total=1))
 
     while True:

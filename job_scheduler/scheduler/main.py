@@ -5,6 +5,7 @@ from typing import Sequence
 
 from job_scheduler.api.models import Schedule
 from job_scheduler.broker import RedisBroker, ScheduleBroker
+from job_scheduler.config import config
 from job_scheduler.db import RedisScheduleRepository, ScheduleRepository
 from job_scheduler.logging import setup_logging
 from job_scheduler.services import enqueue_jobs, get_range
@@ -43,8 +44,8 @@ def get_now() -> datetime:
 
 async def main():
     setup_logging()
-    repo = await RedisScheduleRepository.get_repo()
-    broker = await RedisBroker.get_broker()
+    repo = await RedisScheduleRepository.get_repo(config.database_url)
+    broker = await RedisBroker.get_broker(config.broker_url)
 
     while True:
         try:
