@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 
 from job_scheduler.api.models import Job, Schedule, ScheduleRequest
+from job_scheduler.config import config
 from job_scheduler.db import (
     JobRepository,
     RedisJobRepository,
@@ -27,11 +28,11 @@ app = FastAPI()
 
 
 async def get_schedule_repo() -> ScheduleRepository:
-    return await RedisScheduleRepository.get_repo()
+    return await RedisScheduleRepository.get_repo(config.database_url)
 
 
 async def get_job_repo() -> JobRepository:
-    return await RedisJobRepository.get_repo()
+    return await RedisJobRepository.get_repo(config.database_url)
 
 
 @app.on_event("startup")
@@ -106,7 +107,8 @@ async def get_schedule_job(
 if __name__ == "__main__":
     uvicorn.run(
         "job_scheduler.api.main:app",
-        host="127.0.0.1",
-        log_level="debug",
-        reload=True,
+        host=config.api.host,
+        port=config.api.port,
+        log_level=config.api.loglevel,
+        reload=config.api.reload,
     )

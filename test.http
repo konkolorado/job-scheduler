@@ -5,7 +5,7 @@ POST http://localhost:8000/schedule/
         "description": "Test Description",
         "schedule": "* * * * *",
         "job": {
-            "callback_url": "http://127.0.0.1:8080",
+            "callback_url": "http://dummy-endpoint:8080",
             "http_method": "post",
             "payload": {
                 "name": "Test User"
