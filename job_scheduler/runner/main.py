@@ -37,8 +37,6 @@ async def run_jobs(
 
     start = time.perf_counter()
     results = await asyncio.gather(*[execute(session, s) for s in schedules])
-    for r in results:
-        logger.info(r)
     elapsed = time.perf_counter() - start
 
     await add_jobs(j_repo, *results)
