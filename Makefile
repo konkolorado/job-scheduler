@@ -10,7 +10,7 @@ Run "make <target>" where <target> is one of
  scheduler: to start the job scheduler service
  runner:    to start the job execution service
  dummy:     to start a dummy job endpoint for experimenting
- redis:		to start a local redis instance for testing
+ redis:	    to start a local redis instance for testing
  container: to build to project container
  local:     to start a local stack of services
 endef
