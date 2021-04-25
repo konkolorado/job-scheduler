@@ -42,8 +42,7 @@ def get_now() -> datetime:
     return now - timedelta(microseconds=now.microsecond)
 
 
-async def main():
-    setup_logging()
+async def schedule():
     repo = await RedisScheduleRepository.get_repo(config.database_url)
     broker = await RedisBroker.get_broker(config.broker_url)
 
@@ -55,5 +54,19 @@ async def main():
             await broker.shutdown()
 
 
+def main():
+    setup_logging()
+    try:
+        asyncio.run(schedule())
+    except KeyboardInterrupt:
+        pass
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    if config.dev_mode:
+        from job_scheduler.services.dev import reloader
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(reloader(main))
+    else:
+        main()

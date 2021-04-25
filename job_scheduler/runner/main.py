@@ -69,22 +69,34 @@ async def execute(session: ClientSession, s: Schedule) -> Job:
     )
 
 
-async def main():
-    setup_logging()
+async def run():
     schedule_repo = await RedisScheduleRepository.get_repo(config.database_url)
     job_repo = await RedisJobRepository.get_repo(config.database_url)
     broker = await RedisBroker.get_broker(config.broker_url)
-    session = ClientSession(timeout=ClientTimeout(total=1))
 
-    while True:
-        try:
-            await run_jobs(schedule_repo, job_repo, broker, session)
-        except KeyboardInterrupt:
-            await schedule_repo.shutdown()
-            await job_repo.shutdown()
-            await broker.shutdown()
-            await session.close()
+    async with ClientSession(timeout=ClientTimeout(total=1)) as session:
+        while True:
+            try:
+                await run_jobs(schedule_repo, job_repo, broker, session)
+            except KeyboardInterrupt:
+                await schedule_repo.shutdown()
+                await job_repo.shutdown()
+                await broker.shutdown()
+
+
+def main():
+    setup_logging()
+    try:
+        asyncio.run(run())
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    if config.dev_mode:
+        from job_scheduler.services.dev import reloader
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(reloader(main))
+    else:
+        main()
