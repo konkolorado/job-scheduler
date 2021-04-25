@@ -7,10 +7,15 @@ from fastapi import FastAPI, Request
 from job_scheduler.config import config
 from job_scheduler.logging import setup_logging
 
-setup_logging()
 logger = logging.getLogger("dummy_endpoint")
 
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def startup_event():
+    logging.getLogger("uvicorn").propagate = False
+    setup_logging()
 
 
 @app.post("/")
