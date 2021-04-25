@@ -22,6 +22,7 @@ class DummyService:
 class AppConfig:
     broker_url = environ.var(default="redis://localhost")
     database_url = environ.var(default="redis://localhost")
+    dev_mode = environ.bool_var(default=False)
 
     api = environ.group(API)
     dummy = environ.group(DummyService)

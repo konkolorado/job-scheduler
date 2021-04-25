@@ -41,4 +41,4 @@ container:
 	docker build . -t  job-scheduler:$(PROJECT_VERSION) --force-rm
 
 local:
-	IMAGE_TAG=$(PROJECT_VERSION) docker-compose up
+	IMAGE_TAG=$(PROJECT_VERSION) docker-compose up -d
