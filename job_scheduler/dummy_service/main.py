@@ -24,7 +24,7 @@ async def post(request: Request):
 @app.get("/")
 async def get(request: Request):
     body = await request.body()
-    logger.info(f"Received GET with data {body}")
+    logger.info(f"Received GET with data {str(body)}")
     return body
 
 
@@ -34,5 +34,5 @@ if __name__ == "__main__":
         host=config.dummy.host,
         port=config.dummy.port,
         log_level=config.dummy.loglevel,
-        reload=config.dummy.reload,
+        reload=config.dev_mode,
     )
