@@ -110,5 +110,5 @@ if __name__ == "__main__":
         host=config.api.host,
         port=config.api.port,
         log_level=config.api.loglevel,
-        reload=config.api.reload,
+        reload=config.dev_mode,
     )

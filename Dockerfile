@@ -19,9 +19,8 @@ WORKDIR /app
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --no-dev --no-root
 
+COPY README.rst Makefile ./
 ADD job_scheduler job_scheduler
-COPY README.rst ./
 RUN poetry install --no-dev
 
-ADD Makefile ./
 CMD ["make api"]

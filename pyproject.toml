@@ -15,6 +15,7 @@ croniter = "^0.3.35"
 pytz = "^2020.1"
 aiohttp = "^3.7.3"
 environ-config = "^20.1.0"
+watchgod = "^0.7"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.790"

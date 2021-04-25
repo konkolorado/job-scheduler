@@ -37,8 +37,8 @@ dummy:
 redis:
 	docker run -d --name redis -p 6379:6379 redis:6.0-alpine
 
-container:
+image:
 	docker build . -t  job-scheduler:$(PROJECT_VERSION) --force-rm
 
 local:
-	IMAGE_TAG=$(PROJECT_VERSION) docker-compose up -d
+	IMAGE_TAG=$(PROJECT_VERSION) docker compose up
