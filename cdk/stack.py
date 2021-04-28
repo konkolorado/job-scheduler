@@ -116,7 +116,9 @@ class JobSchedulerStack(cdk.Stack):
             targets=[
                 service.load_balancer_target(container_name="api", container_port=8000)
             ],
-            health_check=elbv2.HealthCheck(path="/health", interval=cdk.Duration(2)),
+            health_check=elbv2.HealthCheck(
+                path="/health", interval=cdk.Duration.minutes(2)
+            ),
         )
 
         # Print the LoadBalancer's public DNS name in the CDK deploy output
