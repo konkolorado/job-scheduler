@@ -29,8 +29,14 @@ jobs:
       - name: Install poetry
         run: python -m pip install poetry
 
+      - name: Install AWS CDK
+        run: sudo npm install -g aws-cdk
+
       - name: Install the project and dependencies
         run: poetry install
+
+      - name: Ensure CDK is passing
+        run: make cfn
 
       - name: Run tests
         run: make test
