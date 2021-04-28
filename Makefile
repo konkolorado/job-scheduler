@@ -1,10 +1,11 @@
-.PHONY: help test api scheduler runner dummy redis image local cfn stack unstack
+.PHONY: help test api scheduler runner dummy redis image local cfn stack unstack clean
 
 PROJECT_VERSION := $(shell poetry version -s)
 
 define HELPTEXT
 Run "make <target>" where <target> is one of:
  help:       print this message
+ clean:      remove generated project files and directories
  test:       run the full suite of tests
  api:	     start the API service
  scheduler:  start the job scheduler service
@@ -21,6 +22,9 @@ export HELPTEXT
 
 help:
 	@echo "$$HELPTEXT"
+
+clean:
+	rm -rf .pytest_cache cdk.out .venv .coverage
 
 test:
 	poetry run pytest --cov=job_scheduler
