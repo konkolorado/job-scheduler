@@ -34,7 +34,8 @@ jobs:
 
       - name: Install the project and dependencies
         run: poetry install
-      - name: Ensure CDK build is passing
+
+      - name: Ensure CDK is passing
         run: make cfn
 
       - name: Run tests
