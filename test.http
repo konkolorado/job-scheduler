@@ -1,4 +1,4 @@
-POST http://localhost:8000/schedule/
+POST http://JobSc-LB8A1-4QTSD1HUCHJB-275522131.us-east-1.elb.amazonaws.com/schedule/
 
 {
         "name": "Test Name",
