@@ -47,6 +47,11 @@ async def shutdown_event():
     logger.info("Repository shut down.")
 
 
+@app.get("/health", status_code=200)
+async def health_check():
+    return {"status": "ok"}
+
+
 @app.post("/schedule/", response_model=Schedule, status_code=201)
 async def create(
     req: ScheduleRequest, repo: ScheduleRepository = Depends(get_schedule_repo)
