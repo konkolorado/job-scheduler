@@ -39,4 +39,4 @@ jobs:
         run: make cfn
 
       - name: Run tests
-        run: make test
+        run: make ci-test
