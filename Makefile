@@ -42,7 +42,7 @@ dummy:
 	poetry run python job_scheduler/dummy_service/main.py
 
 redis:
-	docker compose up -d redis
+	docker-compose up -d redis
 
 image:
 	docker build . -t  job-scheduler:$(PROJECT_VERSION) --force-rm
