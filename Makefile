@@ -26,7 +26,7 @@ help:
 clean:
 	rm -rf .pytest_cache cdk.out .venv .coverage
 
-test:
+test: redis
 	poetry run pytest --cov=job_scheduler
 
 api:
@@ -42,7 +42,7 @@ dummy:
 	poetry run python job_scheduler/dummy_service/main.py
 
 redis:
-	docker run -d --name redis -p 6379:6379 redis:6.0-alpine
+	docker compose up -d redis
 
 image:
 	docker build . -t  job-scheduler:$(PROJECT_VERSION) --force-rm

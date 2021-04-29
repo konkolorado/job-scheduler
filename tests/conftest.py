@@ -77,7 +77,7 @@ def n_jobs(schedule: Schedule):
     return _make_n_jobs
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def event_loop(request):
     """
     We need to override the event_loop fixture such that it is of the
