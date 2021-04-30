@@ -33,6 +33,12 @@ httpx = "^0.16.1"
 "aws-cdk.aws-ec2" = "^1.95.1"
 "aws-cdk.aws-elasticache" = "^1.98.0"
 "aws-cdk.aws-elasticloadbalancingv2" = "^1.100.0"
+typer = {version = "^0.3.2", extras = ["all"]}
+Pygments = "^2.8.1"
+PyYAML = "^5.4.1"
+
+[tool.poetry.scripts]
+js-cli = "job_scheduler.cli.main:app"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
