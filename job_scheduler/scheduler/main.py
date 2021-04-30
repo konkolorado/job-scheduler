@@ -45,7 +45,6 @@ def get_now() -> datetime:
 async def schedule():
     repo = await RedisScheduleRepository.get_repo(config.database_url)
     broker = await RedisBroker.get_broker(config.broker_url)
-
     while True:
         try:
             await schedule_jobs(repo, broker)
@@ -64,9 +63,8 @@ def main():
 
 if __name__ == "__main__":
     if config.dev_mode:
-        from job_scheduler.services.dev import reloader
+        from job_scheduler.services.reloading import with_reloading
 
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(reloader(main))
+        with_reloading(main)
     else:
         main()
