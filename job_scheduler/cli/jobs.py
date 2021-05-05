@@ -4,7 +4,12 @@ import uuid
 import requests
 import typer
 
-from job_scheduler.cli.utils import get_service_addr, json_display
+from job_scheduler.cli.utils import (
+    OutputFormatChoices,
+    OutputFormatOption,
+    get_service_addr,
+    json_display,
+)
 
 app = typer.Typer()
 
@@ -17,6 +22,7 @@ def view(
     job_id: t.Optional[uuid.UUID] = typer.Option(
         None, help="A specific job occurence to look up"
     ),
+    output_format: OutputFormatChoices = OutputFormatOption,
 ):
     """
     View jobs associated with a Schedule
@@ -26,4 +32,4 @@ def view(
         endpoint += f"/{job_id}"
 
     response = requests.get(endpoint)
-    json_display(response.json())
+    json_display(response.json(), output_format)
