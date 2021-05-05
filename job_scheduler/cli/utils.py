@@ -24,7 +24,7 @@ def json_display(data: t.Dict[str, t.Any], format: t.Literal["json", "yaml"] = "
     else:
         result = yaml.dump(data, allow_unicode=True, sort_keys=True)
         colorized = highlight(
-            result, lexers.YamlLexer(ensurenl=False), formatters.TerminalFormatter()
+            result, lexers.YamlLexer(ensurenl=True), formatters.TerminalFormatter()
         )
     typer.echo(colorized, nl=False)
 
