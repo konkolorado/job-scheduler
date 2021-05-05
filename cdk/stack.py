@@ -4,12 +4,14 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticache as ec
 from aws_cdk import core as cdk
 from aws_cdk.aws_logs import RetentionDays
+from aws_cdk.core import Tags
 
 
 class JobSchedulerStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        Tags.of(self).add("StackName", "JobScheduler")
         vpc = ec2.Vpc(self, "VPC", max_azs=2)
 
         # Create a single node ElastiCache cluster and resources:
