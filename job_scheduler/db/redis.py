@@ -130,7 +130,7 @@ class RedisJobRepository(JobRepository):
         if not hasattr(cls, "redis"):
             logging.info(f"Instantiating job repository using redis at {address}.")
             rp = await aioredis.create_redis_pool(address, encoding="utf-8")
-            logging.info(f"DONE {id(rp)}")
+            logging.info(f"Job repository sucessfully instantiated.")
             cls.redis = rp
         return cls()
 
