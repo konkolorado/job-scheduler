@@ -12,3 +12,7 @@ app = typer.Typer(
 app.add_typer(schedules.app, name="schedules")
 app.add_typer(jobs.app, name="jobs")
 app.add_typer(health.app, name="health")
+
+
+if __name__ == "__main__":
+    app()

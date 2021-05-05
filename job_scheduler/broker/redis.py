@@ -73,6 +73,7 @@ class RedisBroker(ScheduleBroker):
         if not hasattr(cls, "redis"):
             logging.info(f"Instantiating broker using redis at {address}.")
             rp = await aioredis.create_redis_pool(address, encoding="utf-8")
+            logging.info(f"Broker sucessfully instantiated.")
             cls.redis = rp
 
         return cls()
