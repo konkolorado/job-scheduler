@@ -3,7 +3,7 @@ import logging
 import time
 from datetime import datetime, timezone
 
-from aiohttp import ClientConnectorError, ClientSession, ClientTimeout
+from aiohttp import ClientConnectorError, ClientSession, ClientTimeout, ContentTypeError
 
 from job_scheduler.api.models import HttpMethod, Job, Schedule
 from job_scheduler.broker import RedisBroker, ScheduleBroker
@@ -39,12 +39,15 @@ async def run_jobs(
     results = await asyncio.gather(*[execute(session, s) for s in schedules])
     elapsed = time.perf_counter() - start
 
-    await add_jobs(j_repo, *results)
-    for s in schedules:
+    executed_schedules = await get_schedule(s_repo, *[r.schedule_id for r in results])
+    for s in executed_schedules:
         s.confirm_execution()
-    await update_schedule(s_repo, {s.id: s.dict() for s in schedules})
-    await ack_jobs(broker, *schedules)
+
+    await add_jobs(j_repo, *results)
+    await ack_jobs(broker, *executed_schedules)
+    await update_schedule(s_repo, {s.id: s.dict() for s in executed_schedules})
     logger.info(f"Ran {len(schedule_ids)} schedules in {elapsed:0.4f} second(s).")
+    await broker.requeue_unacked()
 
 
 async def execute(session: ClientSession, s: Schedule) -> Job:
@@ -55,7 +58,13 @@ async def execute(session: ClientSession, s: Schedule) -> Job:
         async with http_op(s.job.callback_url, json=s.job.payload) as response:
             response_code = response.status
             response_result = await response.json()
-    except (ClientConnectorError, asyncio.exceptions.TimeoutError) as e:
+    except (
+        ClientConnectorError,
+        asyncio.exceptions.TimeoutError,
+        ContentTypeError,
+        Exception,
+    ) as e:
+        logger.info(f"Ran schedule with error: {e}")
         response_code = 400
         response_result = {"error": str(e)}
 

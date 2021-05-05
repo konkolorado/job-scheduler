@@ -48,7 +48,7 @@ class FakeBroker(ScheduleBroker):
         return len(self.jobs_in_broker)
 
     @classmethod
-    def requeue_unacked(cls):
+    async def requeue_unacked(cls):
         for m in cls.running_jobs:
             cls.job_queue.put(m)
         cls.running_jobs = set()
