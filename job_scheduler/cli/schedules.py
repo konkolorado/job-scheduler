@@ -9,7 +9,12 @@ from job_scheduler.cli.callbacks import (
     payload_validator,
     url_validator_callback,
 )
-from job_scheduler.cli.utils import get_service_addr, json_display
+from job_scheduler.cli.utils import (
+    OutputFormatChoices,
+    OutputFormatOption,
+    get_service_addr,
+    json_display,
+)
 
 app = typer.Typer()
 
@@ -32,6 +37,7 @@ def create(
         "separated by an '='",
         callback=payload_validator,
     ),
+    output_format: OutputFormatChoices = OutputFormatOption,
 ):
     """
     Create a new scheduled job
@@ -54,21 +60,22 @@ def create(
             },
         },
     )
-    json_display(response.json())
+    json_display(response.json(), output_format)
 
 
 @app.command()
 def view(
     schedule_id: uuid.UUID = typer.Argument(
         ..., help="The ID for the schedule that launched the job(s)"
-    )
+    ),
+    output_format: OutputFormatChoices = OutputFormatOption,
 ):
     """
     View the details for a single scheduled job
     """
     endpoint = f"{get_service_addr()}/schedule/{schedule_id}"
     response = requests.get(endpoint)
-    json_display(response.json())
+    json_display(response.json(), output_format)
 
 
 @app.command()
@@ -92,6 +99,7 @@ def update(
         "separated by an '='",
         callback=payload_validator,
     ),
+    output_format: OutputFormatChoices = OutputFormatOption,
 ):
     """
     Update details for a scheduled job
@@ -114,18 +122,19 @@ def update(
             },
         },
     )
-    json_display(response.json())
+    json_display(response.json(), output_format)
 
 
 @app.command()
 def delete(
     schedule_id: uuid.UUID = typer.Argument(
         ..., help="The ID for the schedule to delete"
-    )
+    ),
+    output_format: OutputFormatChoices = OutputFormatOption,
 ):
     """
     Delete a scheduled job
     """
     endpoint = f"{get_service_addr()}/schedule/{schedule_id}"
     response = requests.delete(endpoint)
-    json_display(response.json())
+    json_display(response.json(), output_format)
