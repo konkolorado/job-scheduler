@@ -6,12 +6,14 @@ from aws_cdk import core as cdk
 from aws_cdk.aws_logs import RetentionDays
 from aws_cdk.core import Tags
 
+# from aws_cdk import aws_ecr as ecr
+
 
 class JobSchedulerStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        Tags.of(self).add("StackName", "JobScheduler")
+        Tags.of(self).add("StackName", construct_id)
         vpc = ec2.Vpc(self, "VPC", max_azs=2)
 
         # Create a single node ElastiCache cluster and resources:
@@ -38,6 +40,18 @@ class JobSchedulerStack(cdk.Stack):
             cache_subnet_group_name=cache_subnet_group.ref,
             vpc_security_group_ids=[ec_security_group.security_group_id],
         )
+
+        # Create the image repository that will hold our private images
+        # Notice that this creates a bootstrap problem - we need the registry
+        # to exist before we can push images to it, but we can't push images if
+        # if doesn't exist
+        # repository = ecr.Repository(
+        #    self,
+        #    "ImageRepository",
+        #    image_scan_on_push=True,
+        #    image_tag_mutability=ecr.TagMutability.IMMUTABLE,
+        # )
+        # repository.add_lifecycle_rule(max_image_age=cdk.Duration.days(30))
 
         # Create a Task definition that configures the running application,
         # including the containers, their images, their start commands, and the

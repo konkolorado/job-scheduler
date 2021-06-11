@@ -36,6 +36,7 @@ httpx = "^0.16.1"
 typer = {version = "^0.3.2", extras = ["all"]}
 Pygments = "^2.8.1"
 PyYAML = "^5.4.1"
+"aws-cdk.aws-ecr" = "^1.102.0"
 
 [tool.poetry.scripts]
 js-cli = "job_scheduler.cli.main:app"
