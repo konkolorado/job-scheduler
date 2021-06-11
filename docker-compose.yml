@@ -46,7 +46,6 @@ services:
             APP_DATABASE_URL: redis://redis
             APP_DEV_MODE: 1
 
-
     dummy-endpoint:
         image: job-scheduler:${IMAGE_TAG}
         command: make dummy
