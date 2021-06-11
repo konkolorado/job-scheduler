@@ -13,7 +13,7 @@ from job_scheduler.cli.utils import (
     OutputFormatChoices,
     OutputFormatOption,
     get_service_addr,
-    json_display,
+    terminal_display,
 )
 
 app = typer.Typer()
@@ -60,7 +60,7 @@ def create(
             },
         },
     )
-    json_display(response.json(), output_format)
+    terminal_display(response.json(), output_format)
 
 
 @app.command()
@@ -75,7 +75,7 @@ def view(
     """
     endpoint = f"{get_service_addr()}/schedule/{schedule_id}"
     response = requests.get(endpoint)
-    json_display(response.json(), output_format)
+    terminal_display(response.json(), output_format)
 
 
 @app.command()
@@ -122,7 +122,7 @@ def update(
             },
         },
     )
-    json_display(response.json(), output_format)
+    terminal_display(response.json(), output_format)
 
 
 @app.command()
@@ -137,4 +137,4 @@ def delete(
     """
     endpoint = f"{get_service_addr()}/schedule/{schedule_id}"
     response = requests.delete(endpoint)
-    json_display(response.json(), output_format)
+    terminal_display(response.json(), output_format)
