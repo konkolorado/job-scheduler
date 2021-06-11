@@ -8,7 +8,7 @@ from job_scheduler.cli.utils import (
     OutputFormatChoices,
     OutputFormatOption,
     get_service_addr,
-    json_display,
+    terminal_display,
 )
 
 app = typer.Typer()
@@ -32,4 +32,4 @@ def view(
         endpoint += f"/{job_id}"
 
     response = requests.get(endpoint)
-    json_display(response.json(), output_format)
+    terminal_display(response.json(), output_format)
