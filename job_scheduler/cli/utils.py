@@ -15,9 +15,7 @@ def get_service_addr(envvar=DEFAULT_SERVICE_ADDR_ENVVAR):
     return os.environ.get(envvar, DEFAULT_SERVICE_ADDR)
 
 
-def terminal_display(
-    data: t.Dict[str, t.Any], format: t.Literal["json", "yaml"] = "yaml"
-):
+def terminal_display(data: t.Dict[str, t.Any], format: str = "yaml"):
     if format == "json":
         result = json.dumps(data, indent=2, sort_keys=True)
         lexer = lexers.JsonLexer()
@@ -30,8 +28,8 @@ def terminal_display(
 
 
 class OutputFormatChoices(str, enum.Enum):
-    yaml = "yaml"
-    json = "json"
+    yaml: str = "yaml"
+    json: str = "json"
 
 
 OutputFormatOption = typer.Option("yaml", "--output", "-o", help="Output format")
