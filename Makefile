@@ -6,6 +6,7 @@ define HELPTEXT
 Run "make <target>" where <target> is one of:
  help:       print this message
  clean:      remove generated project files and directories
+ lint:       run the project linters
  test:       run the full suite of tests
  api:	     start the API service
  scheduler:  start the job scheduler service
@@ -31,6 +32,10 @@ ci-test:
 
 test: redis
 	poetry run pytest --cov=job_scheduler
+
+lint:
+	poetry run mypy job_scheduler tests;
+	poetry run isort job_scheduler --check
 
 api:
 	poetry run python job_scheduler/api/main.py

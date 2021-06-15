@@ -35,6 +35,9 @@ jobs:
       - name: Install the project and dependencies
         run: poetry install
 
+      - name: Ensure lint steps pass
+        run: make lint
+
       - name: Ensure CDK is passing
         run: make cfn
 
