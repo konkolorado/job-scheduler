@@ -1,10 +1,12 @@
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_elasticloadbalancingv2 as elbv2
+import aws_cdk.aws_route53 as route53
+import aws_cdk.aws_route53_targets as route53_targets
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticache as ec
 from aws_cdk import core as cdk
 from aws_cdk.aws_logs import RetentionDays
-from aws_cdk.core import Tags
+from aws_cdk.core import Duration, Tags
 
 # from aws_cdk import aws_ecr as ecr
 
@@ -137,7 +139,52 @@ class JobSchedulerStack(cdk.Stack):
             ),
         )
 
-        # Print the LoadBalancer's public DNS name in the CDK deploy output
+        # Create a hosted zone for this project, under which multiple subdomains
+        # may live i.e. api.job-scheduler... app.job-scheduler... For this to
+        # work the parent zone must exist already and have a valid registered
+        # domain name. This allows the API to be hit via a 'friendly' web URL
+        # such as api.job-scheduler.uriel.globuscs.info
+        # Docs:
+        # https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-routing-traffic-for-subdomains.html#dns-routing-traffic-for-subdomains-creating-records
+        parent_zone_name = "uriel.globuscs.info"
+        parent_zone_id = "Z07538033GFYDX485PZSC"
+        project_subdomain_name = "job-scheduler"
+        api_subdomain_name = "api"
+        zone_name = f"{project_subdomain_name}.{parent_zone_name}"
+
+        zone = route53.PublicHostedZone(self, "HostedZone", zone_name=zone_name)
+        parent_zone = route53.HostedZone.from_hosted_zone_attributes(
+            self,
+            "ParentHostedZone",
+            zone_name=parent_zone_name,
+            hosted_zone_id=parent_zone_id,
+        )
+        # Create a record in the parent zone telling it to forward traffic for
+        # the job-scheduler domain to the new zone
+        route53.ZoneDelegationRecord(
+            self,
+            "NS",
+            zone=parent_zone,
+            record_name=project_subdomain_name,
+            name_servers=zone.hosted_zone_name_servers or [],
+        )
+        arecord = route53.ARecord(
+            self,
+            "ARecord",
+            zone=zone,
+            target=route53.RecordTarget.from_alias(
+                route53_targets.LoadBalancerTarget(lb)
+            ),
+            record_name=api_subdomain_name,
+            ttl=Duration.seconds(300),
+        )
+
+        cdk.CfnOutput(
+            self,
+            "FriendlyLBDNSName",
+            value=f"{api_subdomain_name}.{zone_name}",
+            description="Friendly DNS Name for the ALB",
+        )
         cdk.CfnOutput(
             self,
             "LBDNSName",

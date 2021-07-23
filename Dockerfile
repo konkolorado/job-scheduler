@@ -1,4 +1,5 @@
-FROM python:3.9-alpine
+# Make won't work on Alpine 3.14+
+FROM python:3.9.6-alpine3.13 
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
     APP_USER=app
