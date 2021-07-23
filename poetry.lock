@@ -896,17 +896,14 @@ d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 
 [[package]]
 name = "cattrs"
-version = "1.5.0"
+version = "1.6.0"
 description = "Composable complex class support for attrs and dataclasses."
 category = "dev"
 optional = false
-python-versions = "~=3.7"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-attrs = ">=20.1.0"
-
-[package.extras]
-dev = ["bumpversion", "wheel", "watchdog", "flake8", "tox", "coverage", "sphinx", "pytest", "pytest-benchmark", "hypothesis", "pendulum", "isort", "black", "immutables"]
+attrs = "*"
 
 [[package]]
 name = "certifi"
@@ -953,14 +950,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "constructs"
-version = "3.3.100"
+version = "3.3.101"
 description = "A programming model for composable configuration"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-jsii = ">=1.31.0,<2.0.0"
+jsii = ">=1.32.0,<2.0.0"
 publication = ">=0.0.3"
 
 [[package]]
@@ -1101,7 +1098,7 @@ plugins = ["setuptools"]
 
 [[package]]
 name = "jsii"
-version = "1.31.0"
+version = "1.32.0"
 description = "Python client for jsii runtime"
 category = "dev"
 optional = false
@@ -1109,7 +1106,7 @@ python-versions = "~=3.6"
 
 [package.dependencies]
 attrs = ">=20.1,<21.0"
-cattrs = {version = ">=1.5.0,<1.6.0", markers = "python_version >= \"3.7\""}
+cattrs = {version = ">=1.6.0,<1.7.0", markers = "python_version >= \"3.7\""}
 python-dateutil = "*"
 typing-extensions = ">=3.7,<4.0"
 
@@ -1768,8 +1765,8 @@ black = [
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
 ]
 cattrs = [
-    {file = "cattrs-1.5.0-py3-none-any.whl", hash = "sha256:277d12740b45e46318b41c3b2e4a3bc067a7b9971cf61f0e96497598ad83f282"},
-    {file = "cattrs-1.5.0.tar.gz", hash = "sha256:a6233d0ce33d48ac71ef818f8e0b9309a89496b359994c4dfe9ad211c1f6d0a3"},
+    {file = "cattrs-1.6.0-py3-none-any.whl", hash = "sha256:c8de53900e3acad94ca83750eb12bb38aa85ce9114be47177c943e2f0eca63b0"},
+    {file = "cattrs-1.6.0.tar.gz", hash = "sha256:3e2cd5dc8a1006d5da53ddcbf4f0b1dd3a21e294323b257678d0a96721f8253a"},
 ]
 certifi = [
     {file = "certifi-2021.5.30-py2.py3-none-any.whl", hash = "sha256:50b1e4f8446b06f41be7dd6338db18e0990601dce795c2b1686458aa7e8fa7d8"},
@@ -1792,8 +1789,8 @@ colorama = [
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
 constructs = [
-    {file = "constructs-3.3.100-py3-none-any.whl", hash = "sha256:2d067203752a16b3e17f3887cc7743c268bbfec130bb1299908a0ebb415b5471"},
-    {file = "constructs-3.3.100.tar.gz", hash = "sha256:51af8ba5e3c7ec811aa77c26ce47ced635ed8b61b3c45c81498e486f258f03fa"},
+    {file = "constructs-3.3.101-py3-none-any.whl", hash = "sha256:0605ea091dda433f0915ba5b3c74bf967d90fb0cf975a5c3b34a7150a3cf48d1"},
+    {file = "constructs-3.3.101.tar.gz", hash = "sha256:993fea0b33556e7fa6ebe495493aba379e9f7aa781803df796c5bd08527dbc67"},
 ]
 coverage = [
     {file = "coverage-5.5-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:b6d534e4b2ab35c9f93f46229363e17f63c53ad01330df9f2d6bd1187e5eaacf"},
@@ -1929,8 +1926,8 @@ isort = [
     {file = "isort-5.9.2.tar.gz", hash = "sha256:f65ce5bd4cbc6abdfbe29afc2f0245538ab358c14590912df638033f157d555e"},
 ]
 jsii = [
-    {file = "jsii-1.31.0-py3-none-any.whl", hash = "sha256:511d535f8d02912b92b7d405b3610161a2acd485991791fd793a45f3262d14f0"},
-    {file = "jsii-1.31.0.tar.gz", hash = "sha256:0e166a334dc96aa10b30b531fbd5c2079b1be3d03a7a5fb53db9d6a4f20ddba0"},
+    {file = "jsii-1.32.0-py3-none-any.whl", hash = "sha256:c71321c4b74ed2c29edc9943c22a36c60a8626df6e0a7173b9ae41366b1a9cb9"},
+    {file = "jsii-1.32.0.tar.gz", hash = "sha256:b95e7747812e16cafbfde80b714d9b684c7a4ee57a00cbaf8f138d5868bdb2ae"},
 ]
 multidict = [
     {file = "multidict-5.1.0-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:b7993704f1a4b204e71debe6095150d43b2ee6150fa4f44d6d966ec356a8d61f"},
