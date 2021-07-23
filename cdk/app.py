@@ -1,5 +1,6 @@
 from aws_cdk import core as cdk
-from stack import JobSchedulerStack
+
+from cdk.stack import JobSchedulerStack
 
 
 class JobSchedulerApp(cdk.App):
