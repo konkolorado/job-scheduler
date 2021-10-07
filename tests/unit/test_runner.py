@@ -24,8 +24,8 @@ def j_repo():
 
 
 @pytest.fixture(scope="session")
-def broker():
-    return FakeBroker.get_broker()
+async def broker():
+    return await FakeBroker.get_broker()
 
 
 async def test_jobs_get_run(

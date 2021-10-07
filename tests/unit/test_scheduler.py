@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta, timezone
+import time
+from datetime import datetime, timezone
 
 import pytest
 
@@ -15,8 +16,8 @@ def repo():
 
 
 @pytest.fixture(scope="session")
-def broker():
-    return FakeBroker.get_broker()
+async def broker():
+    return await FakeBroker.get_broker()
 
 
 @pytest.mark.asyncio
@@ -27,10 +28,10 @@ async def test_jobs_get_scheduled(
     schedule.next_run = datetime.now(timezone.utc)
     await store_schedule(repo, schedule)
 
-    # Run schedule_jobs twice to ensure the job is queued
-    for _ in range(2):
-        await schedule_jobs(repo, broker)
+    # Run schedule_jobs to queue the job
+    time.sleep(1)
+    await schedule_jobs(repo, broker)
 
     # Assert schedule is added to broker
     s = await broker.get()
-    assert s == str(schedule.id)
+    assert s.payload == str(schedule.id)

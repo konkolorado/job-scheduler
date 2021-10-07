@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 from job_scheduler.api.models import Schedule
-from job_scheduler.broker import RedisBroker, ScheduleBroker
+from job_scheduler.broker import RabbitMQBroker, ScheduleBroker
 from job_scheduler.config import config
 from job_scheduler.db import RedisScheduleRepository, ScheduleRepository
 from job_scheduler.logging import setup_logging
@@ -44,7 +44,7 @@ def get_now() -> datetime:
 
 async def schedule():
     repo = await RedisScheduleRepository.get_repo(config.database_url)
-    broker = await RedisBroker.get_broker(config.broker_url)
+    broker = await RabbitMQBroker.get_broker()
     while True:
         try:
             await schedule_jobs(repo, broker)

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from aiohttp import ClientConnectorError, ClientSession, ClientTimeout, ContentTypeError
 
 from job_scheduler.api.models import HttpMethod, Job, Schedule
-from job_scheduler.broker import RedisBroker, ScheduleBroker
+from job_scheduler.broker import RabbitMQBroker, ScheduleBroker
 from job_scheduler.config import config
 from job_scheduler.db import (
     JobRepository,
@@ -20,6 +20,7 @@ from job_scheduler.services import (
     add_jobs,
     dequeue_jobs,
     get_schedule,
+    queue_jobs_to_schedule_ids,
     update_schedule,
 )
 
@@ -32,7 +33,8 @@ async def run_jobs(
     broker: ScheduleBroker,
     session: ClientSession,
 ):
-    schedule_ids = await dequeue_jobs(broker)
+    queue_jobs = await dequeue_jobs(broker)
+    schedule_ids = queue_jobs_to_schedule_ids(*queue_jobs)
     schedules = await get_schedule(s_repo, *schedule_ids)
 
     start = time.perf_counter()
@@ -44,10 +46,9 @@ async def run_jobs(
         s.confirm_execution()
 
     await add_jobs(j_repo, *results)
-    await ack_jobs(broker, *executed_schedules)
+    await ack_jobs(broker, *queue_jobs)
     await update_schedule(s_repo, {s.id: s.dict() for s in executed_schedules})
-    logger.info(f"Ran {len(schedule_ids)} schedules in {elapsed:0.4f} second(s).")
-    await broker.requeue_unacked()
+    logger.info(f"Ran {len(schedules)} schedules in {elapsed:0.4f} second(s).")
 
 
 async def execute(session: ClientSession, s: Schedule) -> Job:
@@ -79,9 +80,9 @@ async def execute(session: ClientSession, s: Schedule) -> Job:
 
 
 async def run():
+    broker = await RabbitMQBroker.get_broker()
     schedule_repo = await RedisScheduleRepository.get_repo(config.database_url)
     job_repo = await RedisJobRepository.get_repo(config.database_url)
-    broker = await RedisBroker.get_broker(config.broker_url)
 
     async with ClientSession(timeout=ClientTimeout(total=1)) as session:
         while True:

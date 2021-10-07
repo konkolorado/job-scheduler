@@ -1,36 +1,39 @@
+from __future__ import annotations
+
+import typing as t
 from abc import ABC, abstractclassmethod, abstractmethod
+
+from .messages import DequeuedMessage, EnqueuedMessage
 
 
 class ScheduleBroker(ABC):
     @abstractmethod
-    def publish(self, *messages: str):
+    async def publish(self, *messages: str) -> t.Sequence[EnqueuedMessage]:
         pass
 
     @abstractmethod
-    def get(self):
+    async def get(self) -> DequeuedMessage:
+        """
+        This implementation should block until a message is ready for processing
+        """
         pass
 
     @abstractmethod
-    def drain(self, limit: int = 100):
+    async def drain(self, limit: int = 100) -> t.Sequence[DequeuedMessage]:
+        """
+        This implementation should block until at least one message is ready for
+        processing
+        """
         pass
 
     @abstractmethod
-    def ack(self, *messages: str):
-        pass
-
-    @property
-    @abstractmethod
-    def size(self):
+    def ack(self, *messages: DequeuedMessage):
         pass
 
     @abstractclassmethod
-    def get_broker(cls):
+    async def get_broker(cls) -> ScheduleBroker:
         pass
 
-    @abstractclassmethod
-    def shutdown(cls):
-        pass
-
-    @abstractclassmethod
-    def requeue_unacked(cls):
+    @abstractmethod
+    def shutdown(self):
         pass

@@ -20,6 +20,7 @@ types-croniter = "^0.1.3"
 types-PyYAML = "^5.4.0"
 types-pytz = "^0.1.1"
 types-requests = "^0.1.11"
+aio-pika = "^6.8.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.900"
@@ -41,6 +42,7 @@ httpx = "^0.16.1"
 typer = {version = "^0.3.2", extras = ["all"]}
 Pygments = "^2.8.1"
 PyYAML = "^5.4.1"
+"aws-cdk.aws-amazonmq" = "^1.125.0"
 
 [tool.poetry.scripts]
 js-cli = "job_scheduler.cli.main:app"

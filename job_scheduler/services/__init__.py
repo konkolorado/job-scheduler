@@ -1,4 +1,9 @@
-from job_scheduler.services.broker import ack_jobs, dequeue_jobs, enqueue_jobs
+from job_scheduler.services.broker import (
+    ack_jobs,
+    dequeue_jobs,
+    enqueue_jobs,
+    queue_jobs_to_schedule_ids,
+)
 from job_scheduler.services.db import (
     add_jobs,
     delete_schedule,
@@ -22,4 +27,5 @@ all = [
     "add_jobs",
     "get_jobs",
     "get_schedule_jobs",
+    "queue_jobs_to_schedule_ids"
 ]
