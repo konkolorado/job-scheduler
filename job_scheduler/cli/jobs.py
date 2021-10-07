@@ -8,6 +8,7 @@ from job_scheduler.cli.utils import (
     OutputFormatChoices,
     OutputFormatOption,
     get_service_addr,
+    resilient_request,
     terminal_display,
 )
 
@@ -31,5 +32,5 @@ def view(
     if job_id is not None:
         endpoint += f"/{job_id}"
 
-    response = requests.get(endpoint)
-    terminal_display(response.json(), output_format)
+    output = resilient_request(requests.get, endpoint)
+    terminal_display(output, output_format)
