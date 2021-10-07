@@ -13,6 +13,7 @@ from job_scheduler.cli.utils import (
     OutputFormatChoices,
     OutputFormatOption,
     get_service_addr,
+    resilient_request,
     terminal_display,
 )
 
@@ -47,7 +48,8 @@ def create(
     else:
         parsed_payload = {}
 
-    response = requests.post(
+    output = resilient_request(
+        requests.post,
         f"{get_service_addr()}/schedule/",
         json={
             "name": name,
@@ -60,7 +62,7 @@ def create(
             },
         },
     )
-    terminal_display(response.json(), output_format)
+    terminal_display(output, output_format)
 
 
 @app.command()
@@ -71,11 +73,11 @@ def view(
     output_format: OutputFormatChoices = OutputFormatOption,
 ):
     """
-    View the details for a single scheduled job
+    View the details for a single schedule
     """
     endpoint = f"{get_service_addr()}/schedule/{schedule_id}"
-    response = requests.get(endpoint)
-    terminal_display(response.json(), output_format)
+    output = resilient_request(requests.get, endpoint)
+    terminal_display(output, output_format)
 
 
 @app.command()
@@ -109,7 +111,8 @@ def update(
     else:
         parsed_payload = {}
 
-    response = requests.put(
+    output = resilient_request(
+        requests.put,
         f"{get_service_addr()}/schedule/{schedule_id}",
         json={
             "name": name,
@@ -122,7 +125,7 @@ def update(
             },
         },
     )
-    terminal_display(response.json(), output_format)
+    terminal_display(output, output_format)
 
 
 @app.command()
@@ -136,5 +139,5 @@ def delete(
     Delete a scheduled job
     """
     endpoint = f"{get_service_addr()}/schedule/{schedule_id}"
-    response = requests.delete(endpoint)
-    terminal_display(response.json(), output_format)
+    output = resilient_request(requests.delete, endpoint)
+    terminal_display(output, output_format)

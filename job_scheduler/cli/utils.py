@@ -3,6 +3,7 @@ import json
 import os
 import typing as t
 
+import requests
 import typer
 import yaml
 from pygments import formatters, highlight, lexers
@@ -33,3 +34,18 @@ class OutputFormatChoices(str, enum.Enum):
 
 
 OutputFormatOption = typer.Option("yaml", "--output", "-o", help="Output format")
+
+
+def resilient_request(
+    callable: t.Callable[..., requests.Response], *args, **kwargs
+) -> t.Dict[str, t.Any]:
+    try:
+        response = callable(*args, **kwargs)
+    except requests.ConnectionError as ce:
+        output = {"error": str(ce)}
+    else:
+        if response.ok:
+            output = response.json()
+        else:
+            output = {"response": response.text}
+    return output
