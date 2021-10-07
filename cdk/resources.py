@@ -1,6 +1,8 @@
+import aws_cdk.aws_amazonmq as amazonmq
 import aws_cdk.aws_elasticloadbalancingv2 as elbv2
 import aws_cdk.aws_route53 as route53
 import aws_cdk.aws_route53_targets as route53_targets
+import aws_cdk.aws_secretsmanager as secretsmanager
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticache as ec
 from aws_cdk import core as cdk
@@ -36,6 +38,55 @@ class RedisCluster(cdk.Construct):
             vpc_security_group_ids=[self.security_group.security_group_id],
         )
         self.endpoint_address = self.redis.attr_redis_endpoint_address
+
+
+class RabbitMQ(cdk.Construct):
+    # Create a RabbitMQ instance in the provided VPC's private subnet
+
+    # The security group creates a network ACL to prevent all inbound and
+    # outbound connections. Later allow connections from the Fargate Service.
+
+    def __init__(self, scope: cdk.Construct, id: str, *, vpc: ec2.Vpc, **kwargs):
+        super().__init__(scope, id)
+
+        self.security_group = ec2.SecurityGroup(
+            self, "RabbitMQSecurityGroup", vpc=vpc, allow_all_outbound=False
+        )
+        self.templated_secret = secretsmanager.Secret(
+            self,
+            "TemplatedSecret",
+            generate_secret_string=secretsmanager.SecretStringGenerator(
+                secret_string_template='{"username":"myadmin"}',
+                generate_string_key="password",
+                exclude_characters=",:=",
+            ),
+        )
+
+        self.rabbitmq = amazonmq.CfnBroker(
+            self,
+            "RabbitMQInstance",
+            broker_name=id,
+            auto_minor_version_upgrade=True,
+            deployment_mode="SINGLE_INSTANCE",
+            engine_type="RABBITMQ",
+            engine_version="3.8.22",
+            host_instance_type="mq.t3.micro",
+            logs=amazonmq.CfnBroker.LogListProperty(general=True),
+            publicly_accessible=False,
+            security_groups=[self.security_group.security_group_id],
+            subnet_ids=[vpc.private_subnets[0].subnet_id],
+            users=[
+                amazonmq.CfnBroker.UserProperty(
+                    username=self.templated_secret.secret_value_from_json(
+                        "username"
+                    ).to_string(),
+                    password=self.templated_secret.secret_value_from_json(
+                        "password"
+                    ).to_string(),
+                )
+            ],
+        )
+        self.endpoint_address = cdk.Fn.select(0, self.rabbitmq.attr_amqp_endpoints)
 
 
 class DNS(cdk.Construct):

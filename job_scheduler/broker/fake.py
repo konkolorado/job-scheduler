@@ -1,62 +1,45 @@
+from __future__ import annotations
+
+import typing as t
 from queue import Empty, LifoQueue
-from typing import MutableSet, Sequence
 
 from job_scheduler.broker.base import ScheduleBroker
 
+from .messages import DequeuedMessage, EnqueuedMessage
+
 
 class FakeBroker(ScheduleBroker):
-    job_queue: LifoQueue = LifoQueue()
-    jobs_in_broker: MutableSet[str] = set()
-    running_jobs: MutableSet[str] = set()
+    def __init__(self):
+        self.job_queue = LifoQueue()
 
-    def __init__(self, *messages: str):
+    async def publish(self, *messages: str) -> t.Sequence[EnqueuedMessage]:
+        published: t.List[EnqueuedMessage] = []
         for m in messages:
-            self.job_queue.put(m)
-            self.jobs_in_broker.add(m)
+            em = EnqueuedMessage.from_string(m)
+            self.job_queue.put(em)
+            published.append(em)
+        return published
 
-    async def publish(self, *messages: str) -> Sequence[str]:
-        deduplicated = []
-        for m in messages:
-            if m not in self.jobs_in_broker:
-                self.job_queue.put(m)
-                self.jobs_in_broker.add(m)
-                deduplicated.append(m)
-        return deduplicated
+    async def get(self) -> DequeuedMessage:
+        return self.job_queue.get(block=True)
 
-    async def get(self, block=True) -> str:
-        m = self.job_queue.get(block)
-        self.running_jobs.add(m)
-        return m
-
-    async def drain(self, limit=100) -> Sequence[str]:
+    async def drain(self, limit=100) -> t.Sequence[DequeuedMessage]:
         messages = [await self.get()]
         while True:
             try:
-                m = await self.get(block=False)
+                m = self.job_queue.get(block=False)
                 messages.append(m)
             except Empty:
                 return messages
 
-    async def ack(self, *messages: str):
+    async def ack(self, *messages: DequeuedMessage):
         for m in messages:
-            self.running_jobs.remove(m)
-            self.jobs_in_broker.remove(m)
             self.job_queue.task_done()
 
-    @property
-    async def size(self):
-        return len(self.jobs_in_broker)
-
     @classmethod
-    async def requeue_unacked(cls):
-        for m in cls.running_jobs:
-            cls.job_queue.put(m)
-        cls.running_jobs = set()
-
-    @classmethod
-    def get_broker(cls):
+    async def get_broker(cls) -> FakeBroker:
         return cls()
 
     @classmethod
     def shutdown(cls):
-        cls.requeue_unacked()
+        return

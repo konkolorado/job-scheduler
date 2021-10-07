@@ -13,6 +13,7 @@ Run "make <target>" where <target> is one of:
  runner:     start the job execution service
  dummy:      start a dummy job endpoint
  redis:	     start a local redis instance
+ rabbitmq:   start a local rabbitmq instance
  image:      build the project container image
  local:      start a local stack of services
  cfn:        generate and display the project's Cloudformation
@@ -51,6 +52,9 @@ dummy:
 
 redis:
 	docker compose up -d redis
+
+rabbitmq:
+	docker compose up -d rabbitmq
 
 image:
 	docker build . -t  job-scheduler:$(PROJECT_VERSION) --force-rm

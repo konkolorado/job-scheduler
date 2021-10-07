@@ -4,7 +4,7 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import core as cdk
 from aws_cdk.aws_logs import RetentionDays
 
-from cdk.resources import DNS, RedisCluster
+from cdk.resources import DNS, RabbitMQ, RedisCluster
 
 # from aws_cdk import aws_ecr as ecr
 
@@ -16,6 +16,7 @@ class JobSchedulerStack(cdk.Stack):
         cdk.Tags.of(self).add("StackName", construct_id)
         vpc = ec2.Vpc(self, "VPC", max_azs=2)
         redis = RedisCluster(self, "RedisCluster", vpc=vpc)
+        rabbitmq = RabbitMQ(self, f"{construct_id}RabbitMQ", vpc=vpc)
 
         # Create the image repository that will hold our private images
         # Notice that this creates a bootstrap problem - we need the registry
@@ -56,7 +57,13 @@ class JobSchedulerStack(cdk.Stack):
             command=["make", "scheduler"],
             environment={
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
-                "APP_BROKER_URL": f"redis://{redis.endpoint_address}",
+                "APP_BROKER_URL": f"{rabbitmq.endpoint_address}",
+                "APP_BROKER_USERNAME": rabbitmq.templated_secret.secret_value_from_json(
+                    "username"
+                ).to_string(),
+                "APP_BROKER_PASSWORD": rabbitmq.templated_secret.secret_value_from_json(
+                    "password"
+                ).to_string(),
             },
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="scheduler", log_retention=RetentionDays.ONE_WEEK
@@ -68,10 +75,17 @@ class JobSchedulerStack(cdk.Stack):
             command=["make", "runner"],
             environment={
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
-                "APP_BROKER_URL": f"redis://{redis.endpoint_address}",
+                "APP_BROKER_URL": f"{rabbitmq.endpoint_address}",
+                "APP_BROKER_USERNAME": rabbitmq.templated_secret.secret_value_from_json(
+                    "username"
+                ).to_string(),
+                "APP_BROKER_PASSWORD": rabbitmq.templated_secret.secret_value_from_json(
+                    "password"
+                ).to_string(),
             },
             logging=ecs.LogDrivers.aws_logs(
-                stream_prefix="runner", log_retention=RetentionDays.ONE_WEEK
+                stream_prefix="runner",
+                log_retention=RetentionDays.ONE_WEEK,
             ),
         )
 
@@ -89,6 +103,7 @@ class JobSchedulerStack(cdk.Stack):
             circuit_breaker={"rollback": True},
         )
         service.connections.allow_to(redis.security_group, ec2.Port.tcp(6379))
+        service.connections.allow_to(rabbitmq.security_group, ec2.Port.tcp(5671))
 
         # Create a LoadBalancer which makes the API container publicly
         # accessible. The LB listens for connections on port 80 and forwards
