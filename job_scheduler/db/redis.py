@@ -1,16 +1,20 @@
-import itertools
+from __future__ import annotations
+
 import logging
 from typing import MutableMapping, Sequence
 
 import aioredis
 
+from job_scheduler.config import config
 from job_scheduler.db.base import JobRepository, ScheduleRepository
 from job_scheduler.db.types import JobRepoItem, ScheduleRepoItem
 
+logging.info(f"Instantiating redis pool at {config.database_url}.")
+redis = aioredis.from_url(config.database_url, encoding="utf-8", decode_responses=True)
+logging.info(f"Redis pool sucessfully instantiated.")
+
 
 class RedisScheduleRepository(ScheduleRepository):
-    redis: aioredis.Redis
-
     def __init__(self):
         self.table = "schedules"
         self.namespace = "schedules"
@@ -22,70 +26,46 @@ class RedisScheduleRepository(ScheduleRepository):
 
     async def add(self, *items: ScheduleRepoItem) -> None:
         keys_and_vals = {self.namespaced_key(i.id): i.schedule for i in items}
-        scores_and_keys = [(i.priority, i.id) for i in items]
+        keys_to_scores = {i.id: i.priority for i in items}
 
-        await self.redis.mset(keys_and_vals)
-        await self.redis.zadd(
-            self.table,
-            *itertools.chain.from_iterable(scores_and_keys),
-        )
+        await redis.mset(keys_and_vals)
+        await redis.zadd(self.table, mapping=keys_to_scores, nx=True)
 
     async def get(self, *keys: str) -> Sequence[str]:
         if len(keys) == 0:
             return []
 
         namespaced = [self.namespaced_key(k) for k in keys]
-        result = await self.redis.mget(*namespaced)
+        result = await redis.mget(*namespaced)
         if len(result) == 1 and result[0] == None:
             return []
         return result
 
     async def update(self, *items: ScheduleRepoItem) -> None:
         keys_and_vals = {self.namespaced_key(i.id): i.schedule for i in items}
-        scores_and_keys = [(i.priority, i.id) for i in items]
+        keys_to_scores = {i.id: i.priority for i in items}
 
-        await self.redis.mset(keys_and_vals)
-        await self.redis.zadd(
-            self.table,
-            *itertools.chain.from_iterable(scores_and_keys),
-            exist=self.redis.ZSET_IF_EXIST,
-        )
+        await redis.mset(keys_and_vals)
+        await redis.zadd(self.table, mapping=keys_to_scores, xx=True)
 
     async def delete(self, *keys: str) -> None:
         namespaced = [self.namespaced_key(k) for k in keys]
-        delete = await self.redis.delete(*namespaced)
-        zrem = await self.redis.zrem(self.table, *keys)
+        delete = await redis.delete(*namespaced)
+        zrem = await redis.zrem(self.table, *keys)
 
     async def get_range(self, min_value: float, max_value: float) -> Sequence[str]:
-        return await self.redis.zrangebyscore(self.table, min=min_value, max=max_value)
+        return await redis.zrangebyscore(self.table, min=min_value, max=max_value)
 
     @property
     async def size(self) -> int:
-        return await self.redis.zcount(self.table)
+        return await redis.zcount(self.table, "-inf", "+inf")
 
     @classmethod
-    async def get_repo(
-        cls, address: str = "redis://localhost"
-    ) -> "RedisScheduleRepository":
-        if not hasattr(cls, "redis"):
-            logging.info(f"Instantiating schedule repository using redis at {address}.")
-            rp = await aioredis.create_redis_pool(address, encoding="utf-8")
-            logging.info("Schedule repository successfully instantiated.")
-            cls.redis = rp
+    async def get_repo(cls) -> RedisScheduleRepository:
         return cls()
-
-    @classmethod
-    async def shutdown(cls) -> None:
-        cls.redis.close()
-        await cls.redis.wait_closed()
-        logging.info(
-            f"Schedule repository closed redis connection to {cls.redis.address}"
-        )
 
 
 class RedisJobRepository(JobRepository):
-    redis: aioredis.Redis
-
     def __init__(self):
         self.namespace = "jobs"
 
@@ -96,17 +76,17 @@ class RedisJobRepository(JobRepository):
 
     async def add(self, *items: JobRepoItem):
         keys_and_vals = {self.namespaced_key(i.id): i.job for i in items}
-        await self.redis.mset(keys_and_vals)
+        await redis.mset(keys_and_vals)
 
         for i in items:
-            await self.redis.sadd(self.namespaced_key(i.schedule_id), i.id)
+            await redis.sadd(self.namespaced_key(i.schedule_id), i.id)
 
     async def get(self, *keys: str) -> Sequence[str]:
         if len(keys) == 0:
             return []
 
         namespaced = [self.namespaced_key(k) for k in keys]
-        result = await self.redis.mget(*namespaced)
+        result = await redis.mget(*namespaced)
         if len(result) == 1 and result[0] == None:
             return []
         return result
@@ -115,7 +95,7 @@ class RedisJobRepository(JobRepository):
         result = {}
         for k in keys:
             namespaced_k = self.namespaced_key(k)
-            job_ids = await self.redis.smembers(namespaced_k)
+            job_ids = await redis.smembers(namespaced_k)
             jobs = await self.get(*job_ids)
             result[k] = jobs
         return result
@@ -126,16 +106,5 @@ class RedisJobRepository(JobRepository):
         # return await self.redis.dbsize()
 
     @classmethod
-    async def get_repo(cls, address: str = "redis://localhost") -> "RedisJobRepository":
-        if not hasattr(cls, "redis"):
-            logging.info(f"Instantiating job repository using redis at {address}.")
-            rp = await aioredis.create_redis_pool(address, encoding="utf-8")
-            logging.info(f"Job repository sucessfully instantiated.")
-            cls.redis = rp
+    async def get_repo(cls) -> RedisJobRepository:
         return cls()
-
-    @classmethod
-    async def shutdown(cls) -> None:
-        cls.redis.close()
-        await cls.redis.wait_closed()
-        logging.info(f"Job repository closed redis connection to {cls.redis.address}")

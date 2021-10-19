@@ -43,13 +43,12 @@ def get_now() -> datetime:
 
 
 async def schedule():
-    repo = await RedisScheduleRepository.get_repo(config.database_url)
+    repo = await RedisScheduleRepository.get_repo()
     broker = await RabbitMQBroker.get_broker()
     while True:
         try:
             await schedule_jobs(repo, broker)
         except KeyboardInterrupt:
-            await repo.shutdown()
             await broker.shutdown()
 
 

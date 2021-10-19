@@ -1,7 +1,7 @@
-import json
+from __future__ import annotations
+
 from collections import defaultdict
-from typing import MutableMapping, MutableSet, Sequence, Tuple, Union
-from uuid import UUID
+from typing import MutableMapping, Sequence
 
 from job_scheduler.db.base import JobRepository, ScheduleRepository
 from job_scheduler.db.types import JobRepoItem, JsonMap, ScheduleRepoItem
@@ -48,12 +48,8 @@ class FakeScheduleRepository(ScheduleRepository):
         return len(self.data)
 
     @classmethod
-    def get_repo(cls):
+    def get_repo(cls) -> FakeScheduleRepository:
         return cls()
-
-    @classmethod
-    def shutdown(cls):
-        pass
 
 
 class FakeJobRepository(JobRepository):
@@ -84,9 +80,5 @@ class FakeJobRepository(JobRepository):
         pass
 
     @classmethod
-    def get_repo(cls):
+    def get_repo(cls) -> FakeJobRepository:
         return cls()
-
-    @classmethod
-    def shutdown(cls):
-        pass

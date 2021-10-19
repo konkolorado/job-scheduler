@@ -33,10 +33,6 @@ class ScheduleRepository(ABC):
     def get_repo(cls):
         pass
 
-    @abstractclassmethod
-    def shutdown(cls):
-        pass
-
 
 class JobRepository(ABC):
     @abstractmethod
@@ -58,8 +54,4 @@ class JobRepository(ABC):
 
     @abstractclassmethod
     def get_repo(cls):
-        pass
-
-    @abstractclassmethod
-    def shutdown(cls):
         pass
