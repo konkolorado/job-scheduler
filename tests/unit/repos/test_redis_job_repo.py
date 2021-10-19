@@ -65,10 +65,10 @@ async def test_get_by_parent(n_jobs, repo: RedisJobRepository):
     assert len(results[s_id]) == len(jobs)
 
 
-@pytest.mark.asyncio
-async def test_redis_shutdown(repo: RedisJobRepository):
-    await repo.shutdown()
-    assert repo.redis.closed
+# @pytest.mark.asyncio
+# async def test_redis_shutdown(repo: RedisJobRepository):
+#    await repo.shutdown()
+#    assert repo.redis.closed
 
 
 def test_namespaced_key(repo: RedisJobRepository):

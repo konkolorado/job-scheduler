@@ -28,23 +28,17 @@ app = FastAPI()
 
 
 async def get_schedule_repo() -> ScheduleRepository:
-    return await RedisScheduleRepository.get_repo(config.database_url)
+    return await RedisScheduleRepository.get_repo()
 
 
 async def get_job_repo() -> JobRepository:
-    return await RedisJobRepository.get_repo(config.database_url)
+    return await RedisJobRepository.get_repo()
 
 
 @app.on_event("startup")
 async def startup_event():
     logging.getLogger("uvicorn").propagate = False
     setup_logging()
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await RedisScheduleRepository.shutdown()
-    logger.info("Repository shut down.")
 
 
 @app.get("/health", status_code=200)

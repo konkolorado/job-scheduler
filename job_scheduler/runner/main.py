@@ -81,16 +81,14 @@ async def execute(session: ClientSession, s: Schedule) -> Job:
 
 async def run():
     broker = await RabbitMQBroker.get_broker()
-    schedule_repo = await RedisScheduleRepository.get_repo(config.database_url)
-    job_repo = await RedisJobRepository.get_repo(config.database_url)
+    schedule_repo = await RedisScheduleRepository.get_repo()
+    job_repo = await RedisJobRepository.get_repo()
 
     async with ClientSession(timeout=ClientTimeout(total=1)) as session:
         while True:
             try:
                 await run_jobs(schedule_repo, job_repo, broker, session)
             except KeyboardInterrupt:
-                await schedule_repo.shutdown()
-                await job_repo.shutdown()
                 await broker.shutdown()
 
 
