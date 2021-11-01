@@ -75,6 +75,7 @@ class JobSchedulerStack(cdk.Stack):
             command=["make", "runner"],
             environment={
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
+                "APP_CACHE_URL": f"redis://{redis.endpoint_address}",
                 "APP_BROKER_URL": f"{rabbitmq.endpoint_address}",
                 "APP_BROKER_USERNAME": rabbitmq.templated_secret.secret_value_from_json(
                     "username"

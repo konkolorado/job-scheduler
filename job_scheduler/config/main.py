@@ -28,6 +28,7 @@ class DummyService:
 @environ.config
 class AppConfig:
     database_url = environ.var(default="redis://localhost")
+    cache_url = environ.var(default="redis://localhost")
     dev_mode = environ.bool_var(default=False)
 
     api = environ.group(API)
