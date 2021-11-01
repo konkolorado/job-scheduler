@@ -5,28 +5,40 @@ from typing import Sequence
 
 from job_scheduler.api.models import Schedule
 from job_scheduler.broker import RabbitMQBroker, ScheduleBroker
+from job_scheduler.cache import RedisScheduleCache, ScheduleCache
 from job_scheduler.config import config
 from job_scheduler.db import RedisScheduleRepository, ScheduleRepository
 from job_scheduler.logging import setup_logging
-from job_scheduler.services import enqueue_jobs, get_range
+from job_scheduler.services import (
+    add_to_cache,
+    diff_from_cache,
+    enqueue_jobs,
+    get_range,
+)
 
 logger = logging.getLogger("job_scheduler")
 
 
-async def schedule_jobs(repo: ScheduleRepository, broker: ScheduleBroker, interval=1):
+async def schedule_jobs(
+    repo: ScheduleRepository, broker: ScheduleBroker, cache: ScheduleCache, interval=1
+):
     now = get_now()
-    schedules_to_run = await get_runnable_schedules(repo, now)
-    enqueued = await enqueue_jobs(broker, *schedules_to_run)
+    schedule_candidates = await get_runnable_schedules(repo, now)
+    runnable_schedules = await diff_from_cache(cache, *schedule_candidates)
+    if len(runnable_schedules) < len(schedule_candidates):
+        logging.warning(
+            f"Ignoring {len(schedule_candidates)-len(runnable_schedules)} "
+            "item(s) from cache"
+        )
 
-    n_late = len(schedules_to_run) - len(enqueued)
-    total_delay = 0.0
-    for s in schedules_to_run:
-        if s not in enqueued:
-            total_delay += s.current_delay.seconds
+    await enqueue_jobs(broker, *runnable_schedules)
+    await add_to_cache(cache, *runnable_schedules)
 
-    logger.info(f"Queued {len(enqueued)} schedule(s) for execution at {now}.")
-    if n_late > 0:
-        logger.warning(f"Observed {total_delay} seconds delay in {n_late} schedule(s).")
+    total_delay = sum(s.current_delay.seconds for s in schedule_candidates)
+    logger.info(f"Queued {len(runnable_schedules)} schedule(s) for execution at {now}.")
+    logger.warning(
+        f"Observed {total_delay} second(s) delay in {len(schedule_candidates)} schedule(s)."
+    )
     logger.info(f"Sleeping for {interval} second(s).")
     await asyncio.sleep(interval)
 
@@ -43,11 +55,12 @@ def get_now() -> datetime:
 
 
 async def schedule():
+    cache = await RedisScheduleCache.get_cache()
     repo = await RedisScheduleRepository.get_repo()
     broker = await RabbitMQBroker.get_broker()
     while True:
         try:
-            await schedule_jobs(repo, broker)
+            await schedule_jobs(repo, broker, cache)
         except KeyboardInterrupt:
             await broker.shutdown()
 

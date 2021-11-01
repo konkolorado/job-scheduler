@@ -23,6 +23,7 @@ services:
         environment:
             APP_DATABASE_URL: redis://redis
             APP_BROKER_URL: amqp://rabbitmq
+            APP_CACHE_URL: redis://redis
             APP_BROKER_USERNAME: guest
             APP_BROKER_PASSWORD: guest
             APP_DEV_MODE: 1

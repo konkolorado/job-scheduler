@@ -4,6 +4,7 @@ from job_scheduler.services.broker import (
     enqueue_jobs,
     queue_jobs_to_schedule_ids,
 )
+from job_scheduler.services.cache import add_to_cache, diff_from_cache
 from job_scheduler.services.db import (
     add_jobs,
     delete_schedule,
@@ -27,5 +28,7 @@ all = [
     "add_jobs",
     "get_jobs",
     "get_schedule_jobs",
-    "queue_jobs_to_schedule_ids"
+    "queue_jobs_to_schedule_ids",
+    "diff_from_cache",
+    "add_to_cache",
 ]
