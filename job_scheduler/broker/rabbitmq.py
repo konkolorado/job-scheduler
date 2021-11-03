@@ -58,7 +58,7 @@ class RabbitMQBroker(ScheduleBroker):
     async def get_broker(cls) -> RabbitMQBroker:
         async with _channel_pool.acquire() as channel:
             await channel.set_qos(prefetch_count=config.broker.prefetch_count)
-            queue = await channel.declare_queue(config.broker.queue_name)
+            queue = await channel.declare_queue(config.broker.queue_name, durable=True)
             return cls(channel, queue)
 
     async def publish(self, *messages: str) -> t.Sequence[EnqueuedMessage]:
