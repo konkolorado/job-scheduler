@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from aio_pika import IncomingMessage, Message
+from aio_pika import DeliveryMode, IncomingMessage, Message
 
 
 @dataclass
@@ -12,7 +12,11 @@ class EnqueuedMessage:
 
     @classmethod
     def from_string(cls, message: str) -> EnqueuedMessage:
-        m = Message(str.encode(message), message_id=message)
+        m = Message(
+            str.encode(message),
+            message_id=message,
+            delivery_mode=DeliveryMode.PERSISTENT,
+        )
         return cls(message=m, payload=message)
 
 
