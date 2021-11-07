@@ -40,8 +40,8 @@ class JobSchedulerStack(cdk.Stack):
         api = fargate_task_definition.add_container(
             "api",
             image=ecs.ContainerImage.from_asset("."),
-            command=["make", "api"],
-            port_mappings=[{"containerPort": 8000}],
+            command=["just", "api"],
+            port_mappings=[ecs.PortMapping(container_port=8000)],
             environment={
                 "APP_API_HOST": "0.0.0.0",
                 "APP_API_PORT": "8000",
@@ -54,7 +54,7 @@ class JobSchedulerStack(cdk.Stack):
         scheduler = fargate_task_definition.add_container(
             "scheduler",
             image=ecs.ContainerImage.from_asset("."),
-            command=["make", "scheduler"],
+            command=["just", "scheduler"],
             environment={
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
                 "APP_BROKER_URL": f"{rabbitmq.endpoint_address}",
@@ -72,7 +72,7 @@ class JobSchedulerStack(cdk.Stack):
         runner = fargate_task_definition.add_container(
             "runner",
             image=ecs.ContainerImage.from_asset("."),
-            command=["make", "runner"],
+            command=["just", "runner"],
             environment={
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
                 "APP_CACHE_URL": f"redis://{redis.endpoint_address}",
@@ -101,7 +101,7 @@ class JobSchedulerStack(cdk.Stack):
             cluster=cluster,
             task_definition=fargate_task_definition,
             desired_count=1,
-            circuit_breaker={"rollback": True},
+            circuit_breaker=ecs.DeploymentCircuitBreaker(rollback=True),
         )
         service.connections.allow_to(redis.security_group, ec2.Port.tcp(6379))
         service.connections.allow_to(rabbitmq.security_group, ec2.Port.tcp(5671))
