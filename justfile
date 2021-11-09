@@ -67,9 +67,9 @@ cfn:
 	@poetry run cdk synth
 
 # Deploy the project to AWS
-stack:
+deploy:
 	poetry run cdk deploy JobSchedulerStack --require-approval never
 	
 # Remove the project from AWS
-unstack:
+destroy:
 	poetry run cdk destroy JobSchedulerStack --force

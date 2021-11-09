@@ -22,19 +22,19 @@ async def _get_connection() -> aio_pika.Connection:
     while True:
         try:
             parts = config.broker.url.split("://")
-            safe_string = f"{parts[0]}://{config.broker.username}:****@{parts[1]}"
+            safe_string = f"{parts[0]}://{config.broker.username}:***{config.broker.password[-5:]}@{parts[1]}"
             conn_string = f"{parts[0]}://{config.broker.username}:{config.broker.password}@{parts[1]}"
-            logging.info(f"Instantiating rabbitmq broker at {safe_string}")
+            logger.info(f"Instantiating rabbitmq broker at {safe_string}")
             conn: aio_pika.Connection = await aio_pika.connect_robust(conn_string)
         except ConnectionError:
-            logging.warning(
+            logger.warning(
                 f"Unable to instantiate rabbitmq broker at {config.broker.url}. "
                 f"Retrying in {sleep_time} seconds.",
                 exc_info=True,
             )
             time.sleep(sleep_time)
         else:
-            logging.info(f"Broker sucessfully instantiated.")
+            logger.info(f"Broker sucessfully instantiated.")
             return conn
 
 

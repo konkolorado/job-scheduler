@@ -2,7 +2,7 @@ import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import core as cdk
-from aws_cdk.aws_logs import RetentionDays
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 
 from cdk.resources import DNS, RabbitMQ, RedisCluster
 
@@ -34,6 +34,13 @@ class JobSchedulerStack(cdk.Stack):
         # including the containers, their images, their start commands, and the
         # container's environment variables. Only the API container exposes any
         # ports.
+
+        log_group = LogGroup(
+            self,
+            construct_id,
+            retention=RetentionDays.ONE_WEEK,
+            log_group_name=f"{construct_id}LogGroup",
+        )
         fargate_task_definition = ecs.FargateTaskDefinition(
             self, "TaskDef", memory_limit_mib=512, cpu=256
         )
@@ -47,32 +54,12 @@ class JobSchedulerStack(cdk.Stack):
                 "APP_API_PORT": "8000",
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
             },
-            logging=ecs.LogDrivers.aws_logs(
-                stream_prefix="api", log_retention=RetentionDays.ONE_WEEK
-            ),
+            logging=ecs.LogDrivers.aws_logs(stream_prefix="api", log_group=log_group),
         )
         scheduler = fargate_task_definition.add_container(
             "scheduler",
             image=ecs.ContainerImage.from_asset("."),
             command=["just", "scheduler"],
-            environment={
-                "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
-                "APP_BROKER_URL": f"{rabbitmq.endpoint_address}",
-                "APP_BROKER_USERNAME": rabbitmq.templated_secret.secret_value_from_json(
-                    "username"
-                ).to_string(),
-                "APP_BROKER_PASSWORD": rabbitmq.templated_secret.secret_value_from_json(
-                    "password"
-                ).to_string(),
-            },
-            logging=ecs.LogDrivers.aws_logs(
-                stream_prefix="scheduler", log_retention=RetentionDays.ONE_WEEK
-            ),
-        )
-        runner = fargate_task_definition.add_container(
-            "runner",
-            image=ecs.ContainerImage.from_asset("."),
-            command=["just", "runner"],
             environment={
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
                 "APP_CACHE_URL": f"redis://{redis.endpoint_address}",
@@ -85,8 +72,25 @@ class JobSchedulerStack(cdk.Stack):
                 ).to_string(),
             },
             logging=ecs.LogDrivers.aws_logs(
-                stream_prefix="runner",
-                log_retention=RetentionDays.ONE_WEEK,
+                stream_prefix="scheduler", log_group=log_group
+            ),
+        )
+        runner = fargate_task_definition.add_container(
+            "runner",
+            image=ecs.ContainerImage.from_asset("."),
+            command=["just", "runner"],
+            environment={
+                "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
+                "APP_BROKER_URL": f"{rabbitmq.endpoint_address}",
+                "APP_BROKER_USERNAME": rabbitmq.templated_secret.secret_value_from_json(
+                    "username"
+                ).to_string(),
+                "APP_BROKER_PASSWORD": rabbitmq.templated_secret.secret_value_from_json(
+                    "password"
+                ).to_string(),
+            },
+            logging=ecs.LogDrivers.aws_logs(
+                stream_prefix="runner", log_group=log_group
             ),
         )
 
