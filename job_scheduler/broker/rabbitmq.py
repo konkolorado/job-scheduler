@@ -26,7 +26,7 @@ async def _get_connection() -> aio_pika.Connection:
             conn_string = f"{parts[0]}://{config.broker.username}:{config.broker.password}@{parts[1]}"
             logger.info(f"Instantiating rabbitmq broker at {safe_string}")
             conn: aio_pika.Connection = await aio_pika.connect_robust(conn_string)
-        except ConnectionError:
+        except (ConnectionError, aio_pika.exceptions.IncompatibleProtocolError):
             logger.warning(
                 f"Unable to instantiate rabbitmq broker at {config.broker.url}. "
                 f"Retrying in {sleep_time} seconds.",
