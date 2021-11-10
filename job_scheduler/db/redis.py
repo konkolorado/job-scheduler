@@ -9,9 +9,11 @@ from job_scheduler.config import config
 from job_scheduler.db.base import JobRepository, ScheduleRepository
 from job_scheduler.db.types import JobRepoItem, ScheduleRepoItem
 
-logging.info(f"Instantiating redis pool at {config.database_url}.")
+logger = logging.getLogger(__name__)
+
+logger.info(f"Instantiating redis pool as DB at {config.database_url}.")
 redis = aioredis.from_url(config.database_url, encoding="utf-8", decode_responses=True)
-logging.info(f"Redis pool sucessfully instantiated.")
+logger.info(f"Redis pool for DB sucessfully instantiated.")
 
 
 class RedisScheduleRepository(ScheduleRepository):

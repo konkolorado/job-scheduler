@@ -26,7 +26,7 @@ async def schedule_jobs(
     schedule_candidates = await get_runnable_schedules(repo, now)
     runnable_schedules = await diff_from_cache(cache, *schedule_candidates)
     if len(runnable_schedules) < len(schedule_candidates):
-        logging.warning(
+        logger.warning(
             f"Ignoring {len(schedule_candidates)-len(runnable_schedules)} "
             "item(s) from cache"
         )

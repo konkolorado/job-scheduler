@@ -14,7 +14,7 @@ services:
 
     scheduler:
         image: job-scheduler:${IMAGE_TAG}
-        command: make scheduler
+        command: just scheduler
         depends_on: 
             - redis
             - rabbitmq
@@ -30,7 +30,7 @@ services:
 
     runner:
         image: job-scheduler:${IMAGE_TAG}
-        command: make runner
+        command: just runner
         depends_on: 
             - rabbitmq
             - redis
@@ -48,7 +48,7 @@ services:
         image: job-scheduler:${IMAGE_TAG}
         ports:
             - "8000:8000"
-        command: make api
+        command: just api
         depends_on: 
             - redis
         volumes:
@@ -61,7 +61,7 @@ services:
 
     dummy-endpoint:
         image: job-scheduler:${IMAGE_TAG}
-        command: make dummy
+        command: just dummy
         ports:
             - "8080"
         volumes:

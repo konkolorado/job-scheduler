@@ -1,5 +1,4 @@
-# Make won't work on Alpine 3.14+
-FROM python:3.9.6-alpine3.13 
+FROM python:3.9.6-alpine3.14
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
     APP_USER=app
@@ -7,7 +6,8 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
 RUN apk update && \
     apk add --no-cache \
     build-base \
-    curl
+    curl \
+    just
 
 RUN adduser -S ${APP_USER} 
 USER ${APP_USER}
@@ -19,8 +19,8 @@ WORKDIR /app
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --no-dev --no-root
 
-COPY README.rst Makefile ./
+COPY README.rst justfile ./
 COPY job_scheduler job_scheduler
 RUN poetry install --no-dev
 
-CMD ["make api"]
+CMD ["just api"]

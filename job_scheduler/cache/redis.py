@@ -8,9 +8,11 @@ import aioredis
 from job_scheduler.cache.base import ScheduleCache
 from job_scheduler.config import config
 
-logging.info(f"Instantiating redis pool at {config.cache_url}.")
+logger = logging.getLogger(__name__)
+
+logger.info(f"Instantiating redis pool for caching at {config.cache_url}.")
 redis = aioredis.from_url(config.cache_url, encoding="utf-8", decode_responses=True)
-logging.info(f"Redis pool sucessfully instantiated.")
+logger.info(f"Redis pool for caching sucessfully instantiated.")
 
 
 class RedisScheduleCache(ScheduleCache):
