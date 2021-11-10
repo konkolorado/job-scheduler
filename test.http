@@ -1,25 +1,25 @@
-POST http://JobSc-LB8A1-4QTSD1HUCHJB-275522131.us-east-1.elb.amazonaws.com/schedule/
+POST http://localhost:8000/schedule/
 
 {
-        "name": "Test Name",
-        "description": "Test Description",
-        "schedule": "* * * * *",
-        "job": {
-            "callback_url": "http://dummy-endpoint:8080",
-            "http_method": "post",
-            "payload": {
-                "name": "Test User"
-            }
+    "name": "Test Name",
+    "description": "Test Description",
+    "schedule": "* * * * *",
+    "job": {
+        "callback_url": "http://dummy-endpoint:8080",
+        "http_method": "post",
+        "payload": {
+            "name": "Test User"
         }
+    }
 }
 
 ###
 
-GET  http://localhost:8000/schedule/64da42c8-066b-4950-a201-e92130af4dda
+GET  http://localhost:8000/schedule/901f5dc5-42e4-479c-a9db-37e52bf2ba56
 
 
 ###
-PUT  http://localhost:8000/schedule/ac5dfe23-047f-42cd-a499-956b2d73c273
+PUT  http://localhost:8000/schedule/0f180ca3-1d30-4e56-8ebd-365daa4f5c67
 
 {
     "name": "updated",
@@ -30,4 +30,4 @@ PUT  http://localhost:8000/schedule/ac5dfe23-047f-42cd-a499-956b2d73c273
 
 
 ###
-DELETE http://localhost:8000/schedule/a6c7fe80-dcec-43fa-8398-3462450236a7
+DELETE http://localhost:8000/schedule/0f180ca3-1d30-4e56-8ebd-365daa4f5c67

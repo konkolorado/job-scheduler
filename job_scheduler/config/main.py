@@ -9,6 +9,12 @@ class API:
 
 
 @environ.config
+class Cache:
+    url = environ.var(default="redis://localhost")
+    ttl_s = environ.var(default=10, converter=int)
+
+
+@environ.config
 class Broker:
     url = environ.var(default="amqp://localhost")
     queue_name = environ.var(default="jobs")
@@ -28,12 +34,12 @@ class DummyService:
 @environ.config
 class AppConfig:
     database_url = environ.var(default="redis://localhost")
-    cache_url = environ.var(default="redis://localhost")
     dev_mode = environ.bool_var(default=False)
 
     api = environ.group(API)
     dummy = environ.group(DummyService)
     broker = environ.group(Broker)
+    cache = environ.group(Cache)
 
 
 config = environ.to_config(AppConfig)
