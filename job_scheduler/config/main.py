@@ -5,7 +5,6 @@ import environ
 class API:
     host = environ.var(default="127.0.0.1")
     port = environ.var(default=8000, converter=int)
-    loglevel = environ.var(default="debug")
 
 
 @environ.config
@@ -28,7 +27,28 @@ class DummyService:
     host = environ.var(default="127.0.0.1")
     port = environ.var(default=8000, converter=int)
     sleep = environ.var(default=1, converter=float)
-    loglevel = environ.var(default="debug")
+
+
+@environ.config
+class Logging:
+    level = environ.var(default="debug")
+    format = environ.var(default="console")
+
+    @level.validator
+    def _check_log_level(self, attr, value):
+        valid_values = ["debug", "info", "warning"]
+        if value.lower() not in valid_values:
+            raise ValueError(
+                f"Invalid value for {attr}: {value}. Supported values are {valid_values}"
+            )
+
+    @format.validator
+    def _check_log_format(self, attr, value):
+        valid_values = ["console", "json"]
+        if value.lower() not in valid_values:
+            raise ValueError(
+                f"Invalid value for {attr}: {value}. Supported values are {valid_values}"
+            )
 
 
 @environ.config
@@ -40,6 +60,7 @@ class AppConfig:
     dummy = environ.group(DummyService)
     broker = environ.group(Broker)
     cache = environ.group(Cache)
+    logging = environ.group(Logging)
 
 
 config = environ.to_config(AppConfig)

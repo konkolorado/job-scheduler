@@ -1,7 +1,7 @@
-import logging
 from typing import Sequence
 from uuid import UUID
 
+import structlog
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 
@@ -23,7 +23,7 @@ from job_scheduler.services import (
     update_schedule,
 )
 
-logger = logging.getLogger("api")
+logger = structlog.get_logger("job_scheduler.api")
 app = FastAPI()
 
 
@@ -37,7 +37,6 @@ async def get_job_repo() -> JobRepository:
 
 @app.on_event("startup")
 async def startup_event():
-    logging.getLogger("uvicorn").propagate = False
     setup_logging()
 
 
@@ -108,6 +107,6 @@ if __name__ == "__main__":
         "job_scheduler.api.main:app",
         host=config.api.host,
         port=config.api.port,
-        log_level=config.api.loglevel,
+        log_level=config.logging.level,
         reload=config.dev_mode,
     )

@@ -1,4 +1,3 @@
-import logging
 import multiprocessing
 import os
 import signal
@@ -6,6 +5,7 @@ import sys
 import threading
 import typing as t
 
+import structlog
 from watchgod import PythonWatcher
 
 from job_scheduler.logging import setup_logging
@@ -15,11 +15,9 @@ HANDLED_SIGNALS = (
     signal.SIGTERM,  # Unix signal 15. Sent by `kill <pid>`.
 )
 
-
-logger = logging.getLogger(__name__)
-spawn = multiprocessing.get_context("spawn")
-
 setup_logging()
+logger = structlog.get_logger(__name__)
+spawn = multiprocessing.get_context("spawn")
 
 
 class AppReloader:

@@ -1,7 +1,8 @@
 import asyncio
-import logging
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
+
+import structlog
 
 from job_scheduler.api.models import Schedule
 from job_scheduler.broker import RabbitMQBroker, ScheduleBroker
@@ -16,7 +17,7 @@ from job_scheduler.services import (
     get_range,
 )
 
-logger = logging.getLogger("job_scheduler")
+logger = structlog.getLogger("job_scheduler.scheduler")
 
 
 async def schedule_jobs(

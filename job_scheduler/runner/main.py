@@ -1,8 +1,8 @@
 import asyncio
-import logging
 import time
 from datetime import datetime, timezone
 
+import structlog
 from aiohttp import ClientConnectorError, ClientSession, ClientTimeout, ContentTypeError
 
 from job_scheduler.api.models import HttpMethod, Job, Schedule
@@ -24,7 +24,7 @@ from job_scheduler.services import (
     update_schedule,
 )
 
-logger = logging.getLogger("job_runner")
+logger = structlog.get_logger("job_scheduler.runner")
 
 
 async def run_jobs(

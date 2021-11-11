@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import time
 import typing as t
 
 import aio_pika
+import structlog
 from aio_pika.channel import Channel
 from aio_pika.pool import Pool
 
@@ -14,7 +14,7 @@ from job_scheduler.config import config
 from .base import ScheduleBroker
 from .messages import DequeuedMessage, EnqueuedMessage
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 async def _get_connection() -> aio_pika.Connection:
