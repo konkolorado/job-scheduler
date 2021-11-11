@@ -99,7 +99,5 @@ bog the system down.
 - Do something cool with instrumentation + logs + dashboards
   - investigate using prometheus to do this
     - https://aws.amazon.com/prometheus/resources/?msg-blogs.sort-by=item.additionalFields.createdDate&msg-blogs.sort-order=desc
-- simplify logging setup
-- json logging [structlog]
 - experiment w/ a cdktf
 - rip out the file reload

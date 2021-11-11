@@ -1,4 +1,4 @@
-FROM python:3.9.6-alpine3.14
+FROM python:3.9.6-alpine3.14 as dev
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
     APP_USER=app
@@ -17,10 +17,14 @@ ENV PATH="${PATH}:/home/${APP_USER}/.poetry/bin"
 
 WORKDIR /app
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-dev --no-root
+RUN poetry install --no-root
 
 COPY README.rst justfile ./
 COPY job_scheduler job_scheduler
-RUN poetry install --no-dev
+RUN poetry install
+CMD ["just api"]
 
+
+FROM dev as prod
+RUN poetry install --no-dev
 CMD ["just api"]
