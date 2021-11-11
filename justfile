@@ -59,7 +59,7 @@ image:
     IMAGE_TAG={{ PROJECT_VERSION }} docker compose build
 
 # Start all services locally
-runit: image
+runit:
 	IMAGE_TAG={{ PROJECT_VERSION }} docker compose up
 
 # Build and show the synthesized Cloudformation

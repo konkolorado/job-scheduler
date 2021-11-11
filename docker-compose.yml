@@ -13,7 +13,7 @@ services:
             - "15672:15672"
 
     scheduler:
-        image: job-scheduler:${IMAGE_TAG}
+        image: job-scheduler:${IMAGE_TAG}-dev
         build:
             context: ./
             target: dev
@@ -32,7 +32,7 @@ services:
             APP_DEV_MODE: 1
 
     runner:
-        image: job-scheduler:${IMAGE_TAG}
+        image: job-scheduler:${IMAGE_TAG}-dev
         build:
             context: ./
             target: dev
@@ -51,7 +51,7 @@ services:
             APP_DEV_MODE: 1
 
     api:
-        image: job-scheduler:${IMAGE_TAG}
+        image: job-scheduler:${IMAGE_TAG}-dev
         build:
             context: ./
             target: dev
@@ -69,7 +69,7 @@ services:
             APP_DEV_MODE: 1
 
     dummy-endpoint:
-        image: job-scheduler:${IMAGE_TAG}
+        image: job-scheduler:${IMAGE_TAG}-dev
         build:
             context: ./
             target: dev
@@ -81,5 +81,5 @@ services:
         environment: 
             APP_DUMMY_HOST: 0.0.0.0
             APP_DUMMY_PORT: 8080
-            APP_DEV_MODE: 1
             APP_DUMMY_SLEEP: 0.2
+            APP_DEV_MODE: 1

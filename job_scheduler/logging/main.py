@@ -14,7 +14,7 @@ def setup_logging():
         structlog.stdlib.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
     ]
-    if config.dev_mode:
+    if not config.dev_mode:
         pre_chain.append(structlog.processors.format_exc_info)
 
     logging.config.dictConfig(
