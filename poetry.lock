@@ -1558,33 +1558,33 @@ doc = ["mkdocs (>=1.1.2,<2.0.0)", "mkdocs-material (>=5.4.0,<6.0.0)", "markdown-
 
 [[package]]
 name = "types-croniter"
-version = "0.1.5"
+version = "1.0.3"
 description = "Typing stubs for croniter"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
 [[package]]
 name = "types-pytz"
-version = "0.1.2"
+version = "2021.3.0"
 description = "Typing stubs for pytz"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
 [[package]]
 name = "types-pyyaml"
-version = "5.4.12"
+version = "6.0.0"
 description = "Typing stubs for PyYAML"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "0.1.13"
+version = "2.26.0"
 description = "Typing stubs for requests"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1647,7 +1647,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8.0"
-content-hash = "5920119a22a75a1f9d6e92cb3315431a2dd760e8c4ea4368a9b9512f479b3d26"
+content-hash = "790f9ee5f8aebb4524d244a6778322ae828e45316bf40e366a7e1892ac70f173"
 
 [metadata.files]
 aio-pika = [
@@ -2473,20 +2473,20 @@ typer = [
     {file = "typer-0.3.2.tar.gz", hash = "sha256:5455d750122cff96745b0dec87368f56d023725a7ebc9d2e54dd23dc86816303"},
 ]
 types-croniter = [
-    {file = "types-croniter-0.1.5.tar.gz", hash = "sha256:9d0f0d6e9f9ff08f9d53e109bcb581633220a4b1cd84560d251f26b93d77b486"},
-    {file = "types_croniter-0.1.5-py3-none-any.whl", hash = "sha256:b442fc1b9fc0db2c727fba943c6a807cee184e27b48f5bcc6b57ca51a6297a7f"},
+    {file = "types-croniter-1.0.3.tar.gz", hash = "sha256:955d9ca3efaf99f0f76d6607a1f5b8a9cc4051e26dc34b4a3d69dfa29571758e"},
+    {file = "types_croniter-1.0.3-py3-none-any.whl", hash = "sha256:45f5ca35db9c964c986ecbceea0a779219638b38a01f5346242da44a0013c3e1"},
 ]
 types-pytz = [
-    {file = "types-pytz-0.1.2.tar.gz", hash = "sha256:923976ea4b55c00a5b51daad8f497519780315f7b298a49550e22176f5a8f6d5"},
-    {file = "types_pytz-0.1.2-py2.py3-none-any.whl", hash = "sha256:e2fb8cc82d8dc1d2f20b2776645cf74a65a8dfc9bd26a33adb9ebd2c03e0f8f8"},
+    {file = "types-pytz-2021.3.0.tar.gz", hash = "sha256:86a61967834dceeaaf98b6902ed8357efdd262bb8afcaf4bc8ccecf748592778"},
+    {file = "types_pytz-2021.3.0-py3-none-any.whl", hash = "sha256:b5027e5de50a4c978cd60ca16849d934d44c44ebd7d29cf13ada009efaa9feef"},
 ]
 types-pyyaml = [
-    {file = "types-PyYAML-5.4.12.tar.gz", hash = "sha256:3f4daa754357491625ae8c3a39c9e1b0d7cd5632bc4e1c35e7a7f75a64aa124b"},
-    {file = "types_PyYAML-5.4.12-py3-none-any.whl", hash = "sha256:e06083f85375a5678e4c19452ed6467ce2167b71db222313e1792cb8fc76859a"},
+    {file = "types-PyYAML-6.0.0.tar.gz", hash = "sha256:3d3591ddfc488fc30be3c506a0c0fe54da968fe98d8b76ab12e59d455330ffca"},
+    {file = "types_PyYAML-6.0.0-py3-none-any.whl", hash = "sha256:746f23d351245d176d7bc89eef79e2ee94b4e7306f7d23bfefb3dc946c0fb58d"},
 ]
 types-requests = [
-    {file = "types-requests-0.1.13.tar.gz", hash = "sha256:917d6d0a8d8fe2d084ab6dc28d379ec4e6fa34738e905908680bbfa0ce2d8485"},
-    {file = "types_requests-0.1.13-py3-none-any.whl", hash = "sha256:f7e611082208358045fdeac6edb5d20422ce8cfc935d57dbbef6a6b3a59bfae2"},
+    {file = "types-requests-2.26.0.tar.gz", hash = "sha256:df5ec8c34b413a42ebb38e4f96bdeb68090b875bdfcc5138dc82989c95445883"},
+    {file = "types_requests-2.26.0-py3-none-any.whl", hash = "sha256:809b5dcd3c408ac39d11d593835b6aff32420b3e7ddb79c7f3e823330f040466"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.2-py2-none-any.whl", hash = "sha256:d8226d10bc02a29bcc81df19a26e56a9647f8b0a6d4a83924139f4a8b01f17b7"},
