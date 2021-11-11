@@ -1628,7 +1628,7 @@ standard = ["websockets (>=8.0.0,<9.0.0)", "watchgod (>=0.6,<0.7)", "python-dote
 name = "watchgod"
 version = "0.7"
 description = "Simple, modern file watching and code reload in python."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 
@@ -1647,7 +1647,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8.0"
-content-hash = "bac1309fe6d5a8c6a1ba47e086cae2da2ec8fdf47d82c50803c392cd7f58a4d8"
+content-hash = "5920119a22a75a1f9d6e92cb3315431a2dd760e8c4ea4368a9b9512f479b3d26"
 
 [metadata.files]
 aio-pika = [
