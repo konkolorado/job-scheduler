@@ -56,9 +56,9 @@ class RabbitMQ(cdk.Construct):
             self,
             "TemplatedSecret",
             generate_secret_string=secretsmanager.SecretStringGenerator(
-                secret_string_template='{"username":"myadmin"}',
+                secret_string_template='{"username":"rmqadmin"}',
                 generate_string_key="password",
-                exclude_characters=",:=/",
+                exclude_characters="%+~`#$&*()|[]{}=:, ;<>?!'/@",
             ),
         )
 

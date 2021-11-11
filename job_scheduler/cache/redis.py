@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import logging
 import typing as t
 
 import aioredis
+import structlog
 
 from job_scheduler.cache.base import ScheduleCache
 from job_scheduler.config import config
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class RedisScheduleCache(ScheduleCache):

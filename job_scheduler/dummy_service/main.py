@@ -1,20 +1,19 @@
 import asyncio
-import logging
 
+import structlog
 import uvicorn
 from fastapi import FastAPI, Request
 
 from job_scheduler.config import config
 from job_scheduler.logging import setup_logging
 
-logger = logging.getLogger("dummy_endpoint")
+logger = structlog.get_logger("job_scheduler.dummy_endpoint")
 
 app = FastAPI()
 
 
 @app.on_event("startup")
 async def startup_event():
-    logging.getLogger("uvicorn").propagate = False
     setup_logging()
 
 
@@ -38,6 +37,6 @@ if __name__ == "__main__":
         "job_scheduler.dummy_service.main:app",
         host=config.dummy.host,
         port=config.dummy.port,
-        log_level=config.dummy.loglevel,
+        log_level=config.logging.level,
         reload=config.dev_mode,
     )

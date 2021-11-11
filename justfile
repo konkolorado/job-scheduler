@@ -59,7 +59,7 @@ image:
 	docker build . -t job-scheduler:{{ PROJECT_VERSION }} --force-rm
 
 # Start all services locally
-local: image
+runit: image
 	IMAGE_TAG={{ PROJECT_VERSION }} docker compose up
 
 # Build and show the synthesized Cloudformation

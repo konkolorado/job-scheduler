@@ -38,6 +38,7 @@ class JobSchedulerStack(cdk.Stack):
         log_group = LogGroup(
             self,
             construct_id,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
             retention=RetentionDays.ONE_WEEK,
             log_group_name=f"{construct_id}LogGroup",
         )
@@ -53,6 +54,8 @@ class JobSchedulerStack(cdk.Stack):
                 "APP_API_HOST": "0.0.0.0",
                 "APP_API_PORT": "8000",
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
+                "APP_LOGGING_LEVEL": "debug",
+                "APP_LOGGING_FORMAT": "json",
             },
             logging=ecs.LogDrivers.aws_logs(stream_prefix="api", log_group=log_group),
         )
@@ -70,6 +73,8 @@ class JobSchedulerStack(cdk.Stack):
                 "APP_BROKER_PASSWORD": rabbitmq.templated_secret.secret_value_from_json(
                     "password"
                 ).to_string(),
+                "APP_LOGGING_LEVEL": "debug",
+                "APP_LOGGING_FORMAT": "json",
             },
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="scheduler", log_group=log_group
@@ -88,6 +93,8 @@ class JobSchedulerStack(cdk.Stack):
                 "APP_BROKER_PASSWORD": rabbitmq.templated_secret.secret_value_from_json(
                     "password"
                 ).to_string(),
+                "APP_LOGGING_LEVEL": "debug",
+                "APP_LOGGING_FORMAT": "json",
             },
             logging=ecs.LogDrivers.aws_logs(
                 stream_prefix="runner", log_group=log_group

@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import logging
 from typing import MutableMapping, Sequence
 
 import aioredis
+import structlog
 
 from job_scheduler.config import config
 from job_scheduler.db.base import JobRepository, ScheduleRepository
 from job_scheduler.db.types import JobRepoItem, ScheduleRepoItem
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class RedisScheduleRepository(ScheduleRepository):
