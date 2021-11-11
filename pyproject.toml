@@ -44,6 +44,7 @@ typer = {version = "^0.3.2", extras = ["all"]}
 Pygments = "^2.8.1"
 PyYAML = "^5.4.1"
 "aws-cdk.aws-amazonmq" = "^1.125.0"
+rich = "^10.13.0"
 
 [tool.poetry.scripts]
 js-cli = "job_scheduler.cli.main:app"

@@ -2,7 +2,7 @@ PROJECT_VERSION := `poetry version -s`
 
 # Display all recipes
 default:
-  @just --list
+    @just --list
 
 # Remove generated files and directories
 clean:
@@ -56,7 +56,7 @@ dummy:
 
 # Build the project's image
 image:
-	docker build . -t job-scheduler:{{ PROJECT_VERSION }} --force-rm
+    IMAGE_TAG={{ PROJECT_VERSION }} docker compose build
 
 # Start all services locally
 runit: image
@@ -64,7 +64,7 @@ runit: image
 
 # Build and show the synthesized Cloudformation
 cfn:
-	@poetry run cdk synth
+	poetry run cdk synth
 
 # Deploy the project to AWS
 deploy:
