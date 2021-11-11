@@ -1,8 +1,7 @@
-FROM python:3.9.6-alpine3.14
+FROM python:3.9.6-alpine3.14 as dev
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
     APP_USER=app
-ARG DEV_MODE=0
 
 RUN apk update && \
     apk add --no-cache \
@@ -22,8 +21,10 @@ RUN poetry install --no-root
 
 COPY README.rst justfile ./
 COPY job_scheduler job_scheduler
+RUN poetry install
+CMD ["just api"]
+
+
+FROM dev as prod
 RUN poetry install --no-dev
-RUN if [ $DEV_MODE = 0 ]; then \
-        poetry install --no-dev; \
-    fi
 CMD ["just api"]

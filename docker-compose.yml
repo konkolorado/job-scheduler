@@ -16,8 +16,7 @@ services:
         image: job-scheduler:${IMAGE_TAG}
         build:
             context: ./
-            args:
-                DEV_MODE: 1
+            target: dev
         command: just scheduler
         depends_on: 
             - redis
@@ -36,8 +35,7 @@ services:
         image: job-scheduler:${IMAGE_TAG}
         build:
             context: ./
-            args:
-                DEV_MODE: 1
+            target: dev
         command: just runner
         depends_on: 
             - rabbitmq
@@ -56,8 +54,7 @@ services:
         image: job-scheduler:${IMAGE_TAG}
         build:
             context: ./
-            args:
-                DEV_MODE: 1
+            target: dev
         ports:
             - "8000:8000"
         command: just api
@@ -75,8 +72,7 @@ services:
         image: job-scheduler:${IMAGE_TAG}
         build:
             context: ./
-            args:
-                DEV_MODE: 1
+            target: dev
         command: just dummy
         ports:
             - "8080"
