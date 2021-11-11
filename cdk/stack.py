@@ -47,7 +47,7 @@ class JobSchedulerStack(cdk.Stack):
         )
         api = fargate_task_definition.add_container(
             "api",
-            image=ecs.ContainerImage.from_asset("."),
+            image=ecs.ContainerImage.from_asset(".", target="prod"),
             command=["just", "api"],
             port_mappings=[ecs.PortMapping(container_port=8000)],
             environment={
@@ -61,7 +61,7 @@ class JobSchedulerStack(cdk.Stack):
         )
         scheduler = fargate_task_definition.add_container(
             "scheduler",
-            image=ecs.ContainerImage.from_asset("."),
+            image=ecs.ContainerImage.from_asset(".", target="prod"),
             command=["just", "scheduler"],
             environment={
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
@@ -82,7 +82,7 @@ class JobSchedulerStack(cdk.Stack):
         )
         runner = fargate_task_definition.add_container(
             "runner",
-            image=ecs.ContainerImage.from_asset("."),
+            image=ecs.ContainerImage.from_asset(".", target="prod"),
             command=["just", "runner"],
             environment={
                 "APP_DATABASE_URL": f"redis://{redis.endpoint_address}",
