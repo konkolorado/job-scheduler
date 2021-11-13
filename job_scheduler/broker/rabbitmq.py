@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import time
 import typing as t
 
 import aio_pika
@@ -32,7 +31,7 @@ async def _get_connection() -> aio_pika.Connection:
                 f"Retrying in {sleep_time} seconds.",
                 exc_info=True,
             )
-            time.sleep(sleep_time)
+            asyncio.sleep(sleep_time)
         else:
             logger.info(f"Broker sucessfully instantiated.")
             return conn

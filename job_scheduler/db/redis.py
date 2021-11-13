@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import time
+import asyncio
 from typing import MutableMapping, Sequence
 
 import aioredis
@@ -28,7 +28,7 @@ async def get_redis_connection() -> aioredis.Redis:
                 f"Retrying in {sleep_time} seconds.",
                 exc_info=True,
             )
-            time.sleep(sleep_time)
+            await asyncio.sleep(sleep_time)
         else:
             logger.info(f"Redis pool sucessfully instantiated.")
             return redis
