@@ -17,15 +17,21 @@ ENV PATH="${PATH}:/home/${APP_USER}/.poetry/bin"
 
 WORKDIR /app
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-root --no-dev
 
-COPY README.rst justfile ./
 
 FROM base as prod
+
+RUN poetry install --no-root --no-dev
+COPY README.rst justfile ./
 COPY job_scheduler job_scheduler
 RUN poetry install --no-dev
 CMD ["just api"]
 
+
 FROM base as dev
+
+RUN poetry install --no-root
+COPY README.rst justfile ./
+COPY job_scheduler job_scheduler
 RUN poetry install
 CMD ["just api"]
