@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import MutableMapping, Sequence
 
 import aioredis
@@ -10,6 +11,27 @@ from job_scheduler.db.base import JobRepository, ScheduleRepository
 from job_scheduler.db.types import JobRepoItem, ScheduleRepoItem
 
 logger = structlog.get_logger(__name__)
+
+
+async def get_redis_connection() -> aioredis.Redis:
+    sleep_time = 3
+    while True:
+        try:
+            logger.info(f"Instantiating redis pool at {config.database_url}.")
+            redis = aioredis.from_url(
+                config.database_url, encoding="utf-8", decode_responses=True
+            )
+            await redis.ping()
+        except aioredis.ConnectionError:
+            logger.warning(
+                f"Unable to instantiate redis pool at {config.broker.url}. "
+                f"Retrying in {sleep_time} seconds.",
+                exc_info=True,
+            )
+            time.sleep(sleep_time)
+        else:
+            logger.info(f"Redis pool sucessfully instantiated.")
+            return redis
 
 
 class RedisScheduleRepository(ScheduleRepository):
@@ -62,13 +84,7 @@ class RedisScheduleRepository(ScheduleRepository):
 
     @classmethod
     async def get_repo(cls) -> RedisScheduleRepository:
-        logger.info(
-            f"Instantiating redis pool as schedule DB at {config.database_url}."
-        )
-        cls.redis = aioredis.from_url(
-            config.database_url, encoding="utf-8", decode_responses=True
-        )
-        logger.info(f"Redis pool for schedule DB sucessfully instantiated.")
+        cls.redis = await get_redis_connection()
         return cls()
 
 
@@ -116,9 +132,5 @@ class RedisJobRepository(JobRepository):
 
     @classmethod
     async def get_repo(cls) -> RedisJobRepository:
-        logger.info(f"Instantiating redis pool as job DB at {config.database_url}.")
-        cls.redis = aioredis.from_url(
-            config.database_url, encoding="utf-8", decode_responses=True
-        )
-        logger.info(f"Redis pool for job DB sucessfully instantiated.")
+        cls.redis = await get_redis_connection()
         return cls()
