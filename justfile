@@ -40,26 +40,26 @@ lint:
 
 # Start the API
 api:
-	poetry run python job_scheduler/api/main.py
+	APP_DEV_MODE=1 poetry run python job_scheduler/api/main.py
 
 # Start the scheduler
 scheduler:
-	poetry run python job_scheduler/scheduler/main.py
+	APP_DEV_MODE=1 poetry run python job_scheduler/scheduler/main.py
 
 # Start the runner
 runner:
-	poetry run python job_scheduler/runner/main.py
+	APP_DEV_MODE=1 poetry run python job_scheduler/runner/main.py
 
 # Start the dummy endpoint service
 dummy:
-	poetry run python job_scheduler/dummy_service/main.py
+	APP_DEV_MODE=1 poetry run python job_scheduler/dummy_service/main.py
 
 # Build the project's image
 image:
     IMAGE_TAG={{ PROJECT_VERSION }} docker compose build
 
 # Start all services locally
-runit:
+runit: image
 	IMAGE_TAG={{ PROJECT_VERSION }} docker compose up
 
 # Build and show the synthesized Cloudformation
