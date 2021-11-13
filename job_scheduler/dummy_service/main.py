@@ -33,10 +33,13 @@ async def get(request: Request):
 
 
 if __name__ == "__main__":
+    from job_scheduler.logging import logging_config
+
     uvicorn.run(
         "job_scheduler.dummy_service.main:app",
         host=config.dummy.host,
         port=config.dummy.port,
         log_level=config.logging.level,
+        log_config=logging_config,
         reload=config.dev_mode,
     )
