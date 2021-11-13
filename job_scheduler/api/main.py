@@ -103,10 +103,13 @@ async def get_schedule_job(
 
 
 if __name__ == "__main__":
+    from job_scheduler.logging import logging_config
+
     uvicorn.run(
         "job_scheduler.api.main:app",
         host=config.api.host,
         port=config.api.port,
         log_level=config.logging.level,
+        log_config=logging_config,
         reload=config.dev_mode,
     )

@@ -67,7 +67,6 @@ async def schedule():
 
 
 def main():
-    setup_logging()
     try:
         asyncio.run(schedule())
     except KeyboardInterrupt:
@@ -75,6 +74,7 @@ def main():
 
 
 if __name__ == "__main__":
+    setup_logging()
     if config.dev_mode:
         from job_scheduler.services.reloading import with_reloading
 
