@@ -45,6 +45,8 @@ types-croniter = "^1.0.3"
 types-PyYAML = "^6.0.0"
 types-pytz = "^2021.3.0"
 types-requests = "^2.26.0"
+#burgeon = { path = "../burgeon", develop = true}
+burgeon = "^0.1.0"
 
 [tool.poetry.scripts]
 js-cli = "job_scheduler.cli.main:app"

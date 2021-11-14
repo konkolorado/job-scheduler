@@ -102,7 +102,7 @@ def main():
 if __name__ == "__main__":
     setup_logging()
     if config.dev_mode:
-        from job_scheduler.services.reloading import with_reloading
+        from burgeon import with_reloading
 
         logger.info("Starting runner with reloading.")
         with_reloading(main)
