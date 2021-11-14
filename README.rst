@@ -100,4 +100,4 @@ bog the system down.
   - investigate using prometheus to do this
     - https://aws.amazon.com/prometheus/resources/?msg-blogs.sort-by=item.additionalFields.createdDate&msg-blogs.sort-order=desc
 - experiment w/ a cdktf
-- rip out the file reload
+- use PGSQL for DB

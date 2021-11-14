@@ -48,6 +48,11 @@ logging_config = {
             "propagate": False,
             "level": config.logging.level.upper(),
         },
+        "burgeon": {
+            "handlers": ["default"],
+            "propagate": False,
+            "level": config.logging.level.upper(),
+        },
     },
 }
 
