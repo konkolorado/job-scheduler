@@ -93,6 +93,7 @@ async def run():
 
 
 def main():
+    setup_logging()
     try:
         asyncio.run(run())
     except KeyboardInterrupt:

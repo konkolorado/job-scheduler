@@ -37,10 +37,10 @@ async def schedule_jobs(
 
     total_delay = sum(s.current_delay.seconds for s in schedule_candidates)
     logger.info(f"Queued {len(runnable_schedules)} schedule(s) for execution at {now}.")
-    logger.warning(
-        f"Observed {total_delay} second(s) delay in {len(schedule_candidates)} schedule(s)."
-    )
-    logger.info(f"Sleeping for {interval} second(s).")
+    if total_delay > 0:
+        logger.warning(
+            f"Observed {total_delay} second(s) delay in {len(schedule_candidates)} schedule(s)."
+        )
     await asyncio.sleep(interval)
 
 
@@ -67,6 +67,7 @@ async def schedule():
 
 
 def main():
+    setup_logging()
     try:
         asyncio.run(schedule())
     except KeyboardInterrupt:
