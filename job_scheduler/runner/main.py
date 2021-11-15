@@ -48,7 +48,9 @@ async def run_jobs(
     await add_jobs(j_repo, *results)
     await ack_jobs(broker, *queue_jobs)
     await update_schedule(s_repo, {s.id: s.dict() for s in executed_schedules})
-    logger.info(f"Ran {len(schedules)} schedules in {elapsed:0.4f} second(s).")
+    logger.info(
+        f"Ran a batch of schedules", n_schedules=len(schedules), total_time_s=elapsed
+    )
 
 
 async def execute(session: ClientSession, s: Schedule) -> Job:

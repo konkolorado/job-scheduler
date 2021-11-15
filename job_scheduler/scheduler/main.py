@@ -28,18 +28,22 @@ async def schedule_jobs(
     runnable_schedules = await diff_from_cache(cache, *schedule_candidates)
     if len(runnable_schedules) < len(schedule_candidates):
         logger.warning(
-            f"Ignoring {len(schedule_candidates)-len(runnable_schedules)} "
-            "item(s) from cache"
+            "Ignoring item(s) from cache",
+            n_schedules_ignored=len(schedule_candidates) - len(runnable_schedules),
         )
 
     await enqueue_jobs(broker, *runnable_schedules)
     await add_to_cache(cache, *runnable_schedules)
 
     total_delay = sum(s.current_delay.seconds for s in schedule_candidates)
-    logger.info(f"Queued {len(runnable_schedules)} schedule(s) for execution at {now}.")
+    logger.info(
+        f"Queued schedule(s) for execution", n_schedules=len(runnable_schedules)
+    )
     if total_delay > 0:
         logger.warning(
-            f"Observed {total_delay} second(s) delay in {len(schedule_candidates)} schedule(s)."
+            "Observed delay in schedule(s).",
+            total_delay_s=total_delay,
+            n_schedules=len(schedule_candidates),
         )
     await asyncio.sleep(interval)
 
