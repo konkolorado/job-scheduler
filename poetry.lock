@@ -976,7 +976,7 @@ d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 
 [[package]]
 name = "burgeon"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 category = "dev"
 optional = false
@@ -1955,8 +1955,8 @@ black = [
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
 ]
 burgeon = [
-    {file = "burgeon-0.1.0-py3-none-any.whl", hash = "sha256:26006db26b3207cb2fd3eea376a6ee86e7fb96f5ed1596c28192b0b1b3db60b4"},
-    {file = "burgeon-0.1.0.tar.gz", hash = "sha256:2c45fde12f8e25019ac8da413ee7ff87ff74d1910c13e8c7be383e2fe65938c0"},
+    {file = "burgeon-0.1.1-py3-none-any.whl", hash = "sha256:7885e49de0158993dfb942f1135a548b1a70eb5683c9b4bc5d03dc67535f4746"},
+    {file = "burgeon-0.1.1.tar.gz", hash = "sha256:03d97829c392ccc3259244d664b6cb07030d5f2697d19ba4341580d73fd6449a"},
 ]
 cattrs = [
     {file = "cattrs-1.8.0-py3-none-any.whl", hash = "sha256:901fb2040529ae8fc9d93f48a2cdf7de3e983312ffb2a164ffa4e9847f253af1"},
