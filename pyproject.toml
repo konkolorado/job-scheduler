@@ -17,6 +17,8 @@ aiohttp = "^3.7.3"
 environ-config = "^20.1.0"
 aio-pika = "^6.8.0"
 structlog = "^21.2.0"
+SQLAlchemy = {extras = ["asyncio"], version = "^1.4.27"}
+asyncpg = "^0.24.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.900"

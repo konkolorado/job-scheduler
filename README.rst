@@ -99,5 +99,5 @@ bog the system down.
 - Do something cool with instrumentation + logs + dashboards
   - investigate using prometheus to do this
     - https://aws.amazon.com/prometheus/resources/?msg-blogs.sort-by=item.additionalFields.createdDate&msg-blogs.sort-order=desc
-- experiment w/ a cdktf
+- experiment w/ cdktf
 - use PGSQL for DB

@@ -16,6 +16,10 @@ redis:
 rabbitmq:
     docker compose up -d rabbitmq
 
+# Start postgres as a dependency
+postgres:
+    docker compose up -d postgres
+
 # Start local instances of the project's dependencies
 deps: rabbitmq redis
 

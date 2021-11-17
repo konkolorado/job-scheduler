@@ -14,6 +14,15 @@ class Cache:
 
 
 @environ.config
+class Database:
+    username = environ.var(default="guest")
+    password = environ.var(default="guest")
+    host = environ.var(default="localhost")
+    port = environ.var(default=5432, converter=int)
+    connection_retry_sleep = environ.var(default=3, converter=int)
+
+
+@environ.config
 class Broker:
     url = environ.var(default="amqp://localhost")
     queue_name = environ.var(default="jobs")
@@ -61,6 +70,7 @@ class AppConfig:
     broker = environ.group(Broker)
     cache = environ.group(Cache)
     logging = environ.group(Logging)
+    db = environ.group(Database)
 
 
 config = environ.to_config(AppConfig)
